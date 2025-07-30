@@ -1,0 +1,29 @@
+{% macro controlBar(current, next) %}
+
+	<div class="w-full grid grid-cols-3 justify-stretch gap-x-2 text-center">
+		<a 
+			class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow"
+			hx-get="/options"
+			hx-target="#modal-container"
+  		hx-swap="innerHTML"
+		>
+			Options	
+			<i class="fa fa-cog ml-1" aria-hidden="true"></i>
+		</a>
+		<a 
+			class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow"
+			href="/{{ current }}"
+		>
+			Repeat Module	
+			<i class="fa fa-repeat ml-1" aria-hidden="true"></i>
+		</a>
+		<a 
+			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
+			href="/{{ next }}"
+		>
+			Next Module	
+			<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
+		</a>
+	</div>
+
+{% endmacro %}

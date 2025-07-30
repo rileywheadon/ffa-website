@@ -2,11 +2,13 @@
 
 {% from "status-bar.html" import statusBar %}
 
+{% from "control-bar.html" import controlBar %}
+
 {% from "macros.html" import spinner %}
 
 {% block status %} {{ statusBar(1) }} {% endblock %}
 
-{% block module_content %}
+{% block module_left %}
 
 <div 
 	class="w-full h-full flex flex-col items-center gap-y-4 overflow-y-auto" 
@@ -36,7 +38,7 @@
 		<div 
 			id="map" 
 			x-bind:class="local ? 'hidden' : ''"
-			class="h-full rounded-lg"
+			class="z-10 h-full rounded-lg"
 		>
 
 		</div>
@@ -79,38 +81,36 @@
 
 {% endblock %}
 
-{% block module_summary %}
+{% block module_right %}
 
-<div class="flex-none w-full text-center underline">Module Summary</div>
+<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
 
-<p>The FFA framework uses annual maximum series data. The data for stations on the map is provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+
+	<p>The FFA framework uses annual maximum series data. The data for stations on the map is provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
+
+</div>
+
+<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Dataset Overview</div>
+
+	<div id="01-sidebar" class="grow">
+
+		{% if not summary %}
+			<p>No dataset selected.</p>			
+		{% elif local %}
+			{% include "modules/dataset-local.html" %}
+		{% else %}
+			{% include "modules/dataset-geomet.html" %}
+		{% endif %}
+
+	</div>
+
+</div>
 
 {% endblock %}
 
-{% block module_results %}
-
-<div class="flex-none w-full text-center underline">Dataset Overview</div>
-
-<div id="01-sidebar" class="grow">
-
-	{% if not summary %}
-		<p>No dataset selected.</p>			
-	{% elif local %}
-		{% include "01-sidebar-local.html" %}
-	{% else %}
-		{% include "01-sidebar-geomet.html" %}
-	{% endif %}
-
-</div>
-
-<div class="flex-none w-full flex flex-row justify-end gap-x-2">
-	<a 
-		class="px-4 py-2 bg-green-600 text-sm font-medium text-white rounded-lg shadow" 
-		@click="loading = true;"
-		href="/change-point-detection"
-	>
-		Use Dataset
-	</a>
-</div>
-
+{% block controls %} 
+	{{ controlBar("dataset-selection", "change-point-detection") }}
 {% endblock %}

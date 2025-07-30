@@ -12,23 +12,19 @@
 
 	<div class="col-span-2 flex flex-col gap-4 h-full items-center overflow-y-auto">
 
-		{% block module_content %} {% endblock %}
+		{% block module_left %} {% endblock %}
 
 	</div>
 
 	<div class="col-span-1 flex flex-col gap-4 h-full items-stretch">
 
-		<div class="flex-none flex flex-col border border-gray-300 rounded-lg p-4 gap-y-2">
+		<div class="grow flex flex-col gap-y-4">
 
-			{% block module_summary %} {% endblock %}
-
-		</div>
-
-		<div class="grow flex flex-col border border-gray-300 rounded-lg p-4 gap-y-2">
-
-			{% block module_results %} {% endblock %}
+			{% block module_right %} {% endblock %}
 
 		</div>
+
+		{% block controls %} {% endblock %}
 
 	</div>
 

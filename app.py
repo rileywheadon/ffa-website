@@ -110,9 +110,13 @@ def view_previous_stage(position):
 @app.route("/", methods = ["GET"])
 def index():
     uid = get_or_create_uid()
-    response = make_response(render_template("00-index.html"))
+    response = make_response(render_template("index.html"))
     response.set_cookie("uid", uid, max_age = COOKIE_AGE, httponly = True)
     return response
+
+@app.route("/options", methods = ["GET"])
+def options():
+    return render_template("options-modal.html")
 
 
 @app.route("/start-analysis", methods = ["GET"])
@@ -136,11 +140,10 @@ def dataset_selection():
     summary = read_from_valkey(uid, "data_summary")
     if summary:
         local = not ("station_name" in summary)
-        print(local)
-        return render_template("01-main.html", summary = summary, local = local)
+        return render_template("modules/dataset-selection.html", summary = summary, local = local)
 
     # Redirect the user to dataset selection
-    return render_template("01-main.html", summary = None, local = False)
+    return render_template("modules/dataset-selection.html", summary = None, local = False)
 
 
 @app.route("/dataset-local", methods = ["POST"])
@@ -175,7 +178,7 @@ def dataset_local():
     write_to_valkey(uid, payload) 
 
     # Render the updated dataset selection endpoint
-    return render_template("01-main.html", summary = summary, local = True)
+    return render_template("modules/dataset-selection.html", summary = summary, local = True)
 
 
 @app.route("/dataset-geomet", methods = ["POST"])
@@ -201,7 +204,7 @@ def dataset_geomet():
     write_to_valkey(uid, payload)
 
     # Store as JSON strings in cookies (signed for safety)
-    return render_template("01-sidebar-geomet.html", summary = summary)
+    return render_template("modules/dataset-geomet.html", summary = summary)
 
 @app.route("/download-geomet/<station_number>", methods = ["GET"])
 def download_geomet(station_number):
@@ -232,7 +235,7 @@ def change_point_detection():
     # If change point detection already exists in Redis, render it
     results = read_from_valkey(uid, "change_point_detection")
     if results:
-        return render_template("02-main.html", results = results)
+        return render_template("modules/change-point-detection.html", results = results)
 
     # Hit plumber endpoint to get summary information
     data = read_from_valkey(uid, "data")
@@ -242,7 +245,7 @@ def change_point_detection():
     write_to_valkey(uid, {"change_point_detection": results}) 
 
     # Return the template
-    return render_template("02-main.html", results = results)
+    return render_template("modules/change-point-detection.html", results = results)
 
 
 @app.route("/trend-detection", methods = ["GET", "POST"])
