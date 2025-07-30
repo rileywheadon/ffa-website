@@ -1,0 +1,70 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+
+{% from "status-bar.html" import statusBar %}
+
+{% block status %} {{ statusBar(5) }} {% endblock %}
+
+{% block module_content %}
+
+<div class="flex-none w-full text-center underline">Module Results</div>
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{{ resultItem("selection", block.selection, block.period) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_summary %}
+
+<div class="flex-none w-full text-center underline">Module Summary</div>
+
+<p>The method of L-moments is used to recommend a probability distribution for each subperiod. For subperiods using a nonstationary model, the data is decomposed before the L-moments are computed.</p>
+
+{% endblock %}
+
+{% block module_results %}
+
+<div class="flex-none w-full text-center underline">Select Distributions</div>
+
+<form 
+	action="/parameter-estimation"
+	method="POST"
+	class="grow flex flex-col"
+>
+	<div class="grow"> 
+
+		<p>Select a distribution for each subperiod. Must be GUM, NOR, LNO, GEV, GLO, GNO, PE3, LP3, or WEI. For more information about the probability distributions supported by the FFA framework and a list of acronyms, see <a href="https://rileywheadon.github.io/ffa-docs/probability-distributions/" class="text-sky-600 underline">here</a>.</p>
+
+		{% for i in range(results | length) %}
+
+			{% set block = results[i] %}
+			{% set start = block.period[0] %}
+			{% set end = block.period[1] %}
+
+			<div class="mt-4">
+				<span class="font-semibold">{{ start }}-{{ end }}</span>:
+				<input 
+					name="{{ i }}-distribution"
+					class="border-b border-gray-300 w-10 text-center ml-1" 
+					type="text"
+					value="{{ block.selection.recommendation }}"
+				>
+			</div>
+
+		{% endfor %}
+	</div>
+
+	<div class="flex-none w-full flex flex-row justify-end gap-x-2">
+		<button 
+			type="submit"
+			class="px-4 py-2 bg-green-600 text-white rounded-lg shadow"
+		>
+			Confirm Distributions
+		</a>
+	</div>
+</form>
+
+{% endblock %}

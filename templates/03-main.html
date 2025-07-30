@@ -1,0 +1,73 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+
+{% from "status-bar.html" import statusBar %}
+
+{% block status %} {{ statusBar(3) }} {% endblock %}
+
+{% block module_content %}
+
+<div class="flex-none w-full text-center underline">Module Results</div>
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{% for key, value in block["items"].items() %}
+			{{ resultItem(key, value, block.period) }}
+		{% endfor %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_summary %}
+
+<div class="flex-none w-full text-center underline">Module Summary</div>
+
+<p>This module uses a collection of statistical tests to identify trends in the mean/variability of the chosen dataset. While these tests can provide useful information, it is ultimately up to the modeller to select an approach using both the results of EDA <i>and</i> their knowledge of the station.</p>
+
+{% endblock %}
+
+{% block module_results %}
+
+<div class="flex-none w-full text-center underline">Identified Trends</div>
+
+<div class="grow"> 
+	{% for block in results %}
+
+		{% set start = block.period[0] %}
+		{% set end = block.period[1] %}
+		{% set items = block["items"] %}
+
+		<br>
+
+		<p class="font-semibold">{{ start }}-{{ end }}: </p>
+
+		<ul class="list-disc list-inside mt-2">
+		{% if "sens_mean" in items.keys() and "sens_variance" in items.keys() %}
+			<li>There is evidence of a trend in the mean and variability.</li> 
+			<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
+		{% elif "sens_mean" in items.keys() %}
+			<li>There is evidence of a trend in the mean.</li> 
+			<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
+		{% elif "sens_variance" in items.keys() %}
+			<li>There is evidence of a trend in the variability.</li> 
+			<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
+		{% else %}
+			<li>There is no evidence of a trend.</li> 
+			<li>Recommendation: <span class="font-semibold">Use S-FFA</span>.</li>
+		{% endif %}
+		</ul>
+
+	{% endfor %}
+</div>
+
+<div class="flex-none w-full flex flex-row justify-end gap-x-2">
+	<a 
+		href="/approach-selection"
+		class="px-4 py-2 bg-green-600 text-white rounded-lg shadow"
+	>
+		Continue
+	</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+
+{% from "status-bar.html" import statusBar %}
+
+{% block status %} {{ statusBar(2) }} {% endblock %}
+
+{% set period = results["period"] %} 
+{% set pettitt = results["items"]["pettitt"] %} 
+{% set mks = results["items"]["mks"] %} 
+{% set change_year = pettitt["change_year"] %}
+{% set change_years = mks["change_df"] | map(attribute = "year") %} 
+
+{% block module_content %} 
+
+<div class="flex-none w-full text-center underline">Module Results</div>
+<div class="flex flex-col w-full h-full gap-y-2">
+	{{ resultItem("pettitt", pettitt, period, uid) }}
+	{{ resultItem("mks", mks, period, uid) }}
+</div>
+
+{% endblock %}
+
+{% block module_summary %} 
+
+<div class="flex-none w-full text-center underline">Module Summary</div>
+
+<p>A change point is an abrupt shift or temporal pattern switch (e.g. beginning of a trend) in a time series. Change points indicate inhomogeneous periods, meaning a single model may not represent the entire record adequately. Instead, piecewise analysis should be applied to each homogeneous subperiod. <i>Always use case-specific knowledge about the station if possible.</i></p>
+
+{% endblock %}
+
+{% block module_results %} 
+
+	<div class="flex-none w-full text-center underline">Select Split Points</div>
+
+	<form 
+		class="grow flex flex-col" 
+		action="/trend-detection" 
+		method="POST"
+	>
+
+		<div class="grow"> 
+
+			{% if pettitt.reject or mks.reject %} 
+				<p>The split points detected during EDA are listed below:</p>
+				<ul class="list-disc list-inside mt-2">
+					{% if pettitt.reject %}
+						<li>
+							{{ change_year }} 
+							(from Pettitt test, <i>p={{ pettitt.p_value }}</i>)
+						</li>
+					{% endif %}
+					{% for year in change_years %}
+						<li>
+							{{ year }} 
+							(from MKS test <i>p={{ mks.p_value }}</i>)
+						</li>
+					{% endfor %}
+				</ul>
+			{% else %}
+				<p>No split points were detected during EDA.</p>
+			{% endif %}
+
+			<br>
+
+			<div>
+				Enter zero or more split points for trend detection as a comma-separated list of years:
+				<input 
+					class="border-b border-gray-300 ml-1 w-36" 
+					type="text" 
+					name="points"
+					id="points"
+				/>
+			</div>
+
+		</div> 
+
+		<div class="flex-none w-full flex flex-row justify-end gap-x-2">
+			<button 
+				class="px-4 py-2 bg-green-600 text-white rounded-lg shadow" 
+				@click="loading = true;"
+				type="submit"
+			>
+				Confirm Split Points
+			</button>
+		</div>
+
+	</form>
+
+{% endblock %}

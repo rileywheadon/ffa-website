@@ -1,0 +1,331 @@
+{% macro resultItem(name, result, period, uid) %}
+
+<div 
+	class="flex flex-col border border-gray-300 rounded-lg"
+	x-data="{ close: true }"
+>
+
+	<div 
+		class="flex flex-row items-center px-4 py-2 hover:bg-gray-100"
+		x-bind:class="close ? 'rounded-lg': 'rounded-t-lg border-b border-gray-300'"
+		x-on:click="close = !close"
+	>
+
+		{% if name == "pettitt" %}
+			{% set header = "Pettitt Test" %}
+		{% elif name == "mks" %}
+			{% set header = "Mann-Kendall-Sneyers (MKS) Test" %}
+		{% elif name == "mk" %}
+			{% set header = "Mann-Kendall (MK) Test" %}
+		{% elif name == "spearman" %}
+			{% set header = "Spearman Test" %}
+		{% elif name == "bbmk" %}
+			{% set header = "Block-Bootstrap Mann-Kendall (BBMK) Test" %}
+		{% elif name == "pp" %}
+			{% set header = "Phillips-Perron (PP) Test" %}
+		{% elif name == "kpss" %}
+			{% set header = "Kwiatkowski–Phillips–Schmidt–Shin (KPSS) Test" %}
+		{% elif name == "sens_mean" %}
+			{% set header = "Sen's Trend Estimator (Mean)" %}
+		{% elif name == "runs_mean" %}
+			{% set header = "Runs Test (Mean)" %}
+		{% elif name == "sens_variance" %}
+			{% set header = "Sen's Trend Estimator (Variability)" %}
+		{% elif name == "runs_variance" %}
+			{% set header = "Runs Test (Variability)" %}
+		{% elif name == "mwmk" %}
+			{% set header = "Moving-Window Mann-Kendall (MWMK) Test" %}
+		{% elif name == "white" %}
+			{% set header = "White Test" %}
+		{% elif name == "selection" %}
+			{% set header = "Distribution Selection" %}
+		{% elif name == "estimation" %}
+			{% set header = "Parameter Estimation" %}
+		{% elif name == "uncertainty" %}
+			{% set header = "Uncertainty Quantification" %}
+		{% endif %}
+
+		<div class="font-semibold grow">{{ header }} ({{ period[0] }}-{{ period[1] }})</div>
+		<div 
+			class="text-xl"
+			x-text="close ? '&#8250;' : '&#8964;'"
+		></div>
+	</div>
+	<div 
+		class="px-6 py-4 flex flex-col"	
+		x-bind:class="close ? 'hidden' : ''"
+	>
+
+	{% if result.plot and name != "selection" %}
+		<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+		/>
+	{% endif %}
+
+	{% if name == "pettitt" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The Pettitt test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a change point in {{ result.change_year }}.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is NO evidence of a change point.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "mks" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The MKS test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of change point(s) in {{ result.change_df | map(attribute = "year") | join(", ") }}.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is NO evidence of a change point.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "mk" %}
+
+		<ul class="list-disc list-inside">
+			<li>The MK test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a linear trend in the mean.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is NO evidence of a linear trend in the mean.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "spearman" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The Spearman test found a least lag of {{ result.least_lag }}.</li>
+			{% if result.least_lag > 1 %}
+				<li>There is evidence of statistically significant autocorrelation in the data.</li>
+			{% else %}
+				<li>Therefore, there is NO evidence of statistically significant autocorrelation.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "bbmk" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The BBMK test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a linear trend in the mean after adjusting for autocorrelation.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is NO evidence of a linear trend in the mean after adjusting for autocorrelation.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "pp" %}
+
+		<ul class="list-disc list-inside">
+			<li>The PP test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of trend-stationarity (and hence a deterministic linear trend).</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a unit root (and hence a stochastic trend).</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "kpss" %}
+
+		<ul class="list-disc list-inside">
+			<li>The KPSS test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a unit root (and hence a stochastic trend).</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of trend-stationarity (and hence a deterministic linear trend).</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "runs_mean" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The Runs test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence that the residuals of Sen's trend estimator are NOT random.</li>
+				<li>A linear model may not be appropriate for the nonstationarity.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is evidence that the residuals of Sen's trend estimator are random.</li>
+				<li>A linear model should be appropriate for the nonstationarity.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "runs_variance" %}
+
+		<div class="border-b border-gray-300 my-4"></div>
+
+		<ul class="list-disc list-inside">
+			<li>The Runs test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence that the residuals of Sen's trend estimator are NOT random.</li>
+				<li>A linear model may not be appropriate for the nonstationarity.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is evidence that the residuals of Sen's trend estimator are random.</li>
+				<li>A linear model should be appropriate for the nonstationarity.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "mwmk" %}
+
+		<ul class="list-disc list-inside">
+			<li>The MWMK test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of a linear trend in the variability.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is NO evidence of a linear trend in the variability.</li>
+			{% endif %}
+		</ul>
+
+	{% elif name == "white" %}
+
+		<ul class="list-disc list-inside">
+			<li>The White test had a p-value of {{ result.p_value }}.</li>
+			{% if result.reject %}
+				<li>At a significance level of 0.05, we reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of heteroskedasticity.</li>
+			{% else %}
+				<li>At a significance level of 0.05, we fail to reject the null hypothesis. </li>
+				<li>Therefore, there is evidence of homoskedasticity.</li>
+			{% endif %}
+		</ul>
+	
+	{% elif name == "selection" %}
+
+		<div class="flex flex-row">
+
+			<div>
+	
+				<p><span class="font-semibold">Recommendation</span>: {{ result.recommendation }}</p>
+
+				<table class="w-60 text-center table-auto mt-4">
+					<tr>
+						<td class="py-1 border border-gray-300 underline">Distribution</td>
+						<td class="py-1 border border-gray-300 underline">Metric</td>
+					</tr>
+					{% for key, value in result.metrics.items() %}
+						<tr>
+							<td class="py-1 border border-gray-300">{{ key }}</td>
+							<td class="py-1 border border-gray-300">{{ value }}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+
+			<img 
+				class="max-w-2xl self-center"
+				src="{{ result.plot }}"
+				alt="Embedded Image"
+			/>
+
+		</div>
+
+	{% elif name == "estimation" %}
+
+		<div class="flex flex-col gap-y-2">
+			<p><span class="font-semibold">Method</span>: {{ result.method }}</p>
+			<p><span class="font-semibold">Distribution</span>: {{ result.distribution }}</p>
+			<p><span class="font-semibold">Parameters</span>:</p>
+			<ul class="list-disc list-inside">
+				<li>
+					Location:
+					<i>
+						{% if not result.structure.location %}
+							{{ result.params[0] }}
+						{% else %}
+							{{ result.params[0] }} + {{ result.params[1] }}t
+						{% endif %}
+					</i>
+				</li>
+				<li>
+					Scale:
+					<i>
+						{% set i = 1 + result.structure.location %}
+						{% if not result.structure.scale %}
+							{{ result.params[i] }}
+						{% else %}
+							{{ result.params[i] }} + {{ result.params[i + 1] }}t
+						{% endif %}
+					</i>
+				</li>
+				<li>
+					Shape:
+					<i>
+						{% if result.distribution in ["GUM", "NOR", "LNO"] %}
+							N/A
+						{% else %}
+							{{ result.params[-1] }}
+						{% endif %}
+					</i>
+				</li>
+			</ul>
+		</div>
+
+	{% elif name == "uncertainty" %}
+
+		{% set block = result["1"] %}
+
+		<p><span class="font-semibold">Method</span>: {{ block.method }}</p>
+
+		<table class="text-center table-auto mt-4">
+			<tr>
+				<td class="p-1 border border-gray-300 underline">Return Period</td>
+				<td class="p-1 border border-gray-300 underline">Estimated Return Level</td>
+				<td class="p-1 border border-gray-300 underline">Confidence Interval</td>
+			</tr>
+			{% for i in range(block.periods | length) %}
+				<tr>
+					<td class="p-1 border border-gray-300">{{ block.periods[i] }} Years</td>
+					<td class="p-1 border border-gray-300">{{ block.estimates[i] }}</td>
+					<td class="p-1 border border-gray-300">({{ block.ci_lower[i] }}, {{ block.ci_upper[i] }})</td>
+				</tr>
+			{% endfor %}
+		</table>
+
+	{% endif %}
+
+	</div>
+</div>
+
+{% endmacro %}
+
+{% macro spinner() %}
+
+<div x-show="loading" class="flex items-center justify-center h-screen">
+	<div class="w-16 h-16 border-8 border-gray-300 border-t-sky-600 rounded-full animate-spin">
+
+	</div>
+</div>
+
+{% endmacro %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto flex flex-col h-full">
+
+  <h1 class="text-2xl font-bold mb-4">Flood Frequency Analysis Framework</h1>
+
+  <div class="text-l leading-7 grow">
+
+    <p>This is a web interface for the flood frequency analysis (FFA) framework developed in <a class="underline text-sky-600" href="https://www.sciencedirect.com/science/article/pii/S136481522400001X">Vidrio-Sahagun et al. 2024</a>. The framework provides tools for both stationary and nonstationary FFA as well as exploratory data analysis. In addition to this website, the framework can also be accessed through a <a class="underline text-sky-600" href="https://github.com/rileywheadon/ffa-package">R package</a>. For more information about the framework, see <a class="underline text-sky-600" href="https://rileywheadon.github.io/ffa-docs/">here</a>.</p>
+
+		<br>
+  
+    <p>To use this website, click on “Get Started” below. Then, you will be guided through the following five steps:</p>
+    <ul class="list-disc list-inside ml-2 mt-2">
+  	  <li>Dataset selection</li>
+  	  <li>Exploratory data analysis</li>
+  	  <li>Approach selection</li>
+  	  <li>Frequency analysis</li>
+  	  <li>Report generation</li>
+    </ul>
+
+		<br> 
+		
+		<p>[ADD ATTRIBUTION HERE]</p>
+
+		<br>
+  
+  </div>
+
+	<div class="w-full flex flex-row justify-end">
+		<a class="bg-green-600 text-white rounded-lg px-4 py-2 shadow" href="/start-analysis">
+			Get Started
+		</a>
+	</div>
+
+</div>
+
+{% endblock %}

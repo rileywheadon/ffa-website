@@ -1,0 +1,63 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+
+{% from "status-bar.html" import statusBar %}
+
+{% block status %} {{ statusBar(6) }} {% endblock %}
+
+{% block module_content %}
+
+<div class="flex-none w-full text-center underline">Module Results</div>
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{{ resultItem("estimation", block.estimation, block.period) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_summary %}
+
+<div class="flex-none w-full text-center underline">Module Summary</div>
+
+<p>Given an approach (i.e. S-FFA or NS-FFA) and a probability distribution, this module estimates the parameters. Under nonstationarity, the location and/or scale parameter is a function of the form <i>f(t) = c<sub>0</sub> + c<sub>1</sub>t</i>.</p>
+
+{% endblock %}
+
+{% block module_results %}
+
+<div class="flex-none w-full text-center underline">Review Parameters</div>
+
+<form 
+	action="/uncertainty-quantification"
+	method="POST"
+	class="grow flex flex-col"
+>
+	<div class="grow"> 
+
+		{% for i in range(results | length) %}
+
+			{% set block = results[i] %}
+			{% set start = block.period[0] %}
+			{% set end = block.period[1] %}
+
+			<div class="mt-4">
+				<span class="font-semibold">{{ start }}-{{ end }}</span>: 
+				{{ block.estimation.params }}
+			</div>
+
+		{% endfor %}
+	</div>
+
+	<div class="flex-none w-full flex flex-row justify-end gap-x-2">
+		<button 
+			type="submit"
+			class="px-4 py-2 bg-green-600 text-white rounded-lg shadow"
+		>
+			Confirm Parameters
+		</a>
+	</div>
+</form>
+
+{% endblock %}

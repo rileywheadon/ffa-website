@@ -1,0 +1,53 @@
+{% macro statusItem(name, stage, position) %}
+
+  <a 
+		class="row-start-2 flex flex-row items-center text-white cursor-pointer transform transition duration-300 ease-out hover:-translate-y-[4px]"
+		{% if position < stage %} href="/view-previous-stage/{{ position }}" {% endif %}
+	>
+
+		{% if position < stage %}
+			{% set color_border = 'border-gray-500' %}
+			{% set color_bg = 'bg-gray-500' %}
+		{% elif position == stage %}
+			{% set color_border = 'border-sky-600' %}
+			{% set color_bg = 'bg-sky-600' %}
+		{% else %}
+			{% set color_border = 'border-gray-700' %}
+			{% set color_bg = 'bg-gray-700' %}
+		{% endif %}
+
+		<div class="{{ color_bg }} flex-none w-0 h-0 border-white border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
+		<div class="{{ color_bg }} h-[4em] grow flex flex-row items-center justify-center text-center px-1  shadow-lg">{{ name }}</div>
+		<div class="{{ color_border }} flex-none w-0 h-0 border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
+
+  </a>
+
+{% endmacro %}
+
+{% macro statusBar(stage) %}
+
+<div class="hidden xl:grid grid-rows-[3em_4em] grid-cols-9 items-stretch w-full text-center mb-6 text-sm font-semibold">
+
+  <div class="col-span-2 col-start-2">
+		<div class="mb-1">Exploratory Data Analysis</div>
+		<div class="border-x-2 border-t-2 rounded-t-sm border-gray-600 p-1"></div>
+  </div>
+
+  <div class="col-span-4 col-start-5">
+		<div class="mb-1">Frequency Analysis</div>
+		<div class="border-x-2 border-t-2 rounded-t-sm border-gray-600 p-1"></div>
+  </div>
+
+	{{ statusItem('Dataset Selection', stage, 1) }}
+	{{ statusItem('Change Point Detection', stage, 2) }}
+	{{ statusItem('Trend Detection', stage, 3) }}
+	{{ statusItem('Approach Selection', stage, 4) }}
+	{{ statusItem('Distribution Selection', stage, 5) }}
+	{{ statusItem('Parameter Estimation', stage, 6) }}
+	{{ statusItem('Uncertainty Quantification', stage, 7) }}
+	{{ statusItem('Model Assessment', stage, 8) }}
+	{{ statusItem('Report Generation', stage, 9) }}
+
+</div>
+
+{% endmacro %}
