@@ -1,0 +1,34 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+{% from "status_bar.html" import statusBar %}
+{% from "control_bar.html" import controlBar %}
+
+{% block status %} 
+	{{ statusBar(7) }} 
+{% endblock %}
+
+{% block module_left %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{{ resultItem("assessment", block.assessment, block.period, options) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_right %}
+
+<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>This module computes multiple performance metrics and diagnostic indicators to assess the
+	quality of a fitted flood frequency model. This includes accuracy (e.g., residual statistics), fitting efficiency (information criteria), and uncertainty (i.e., coverage-based metrics using confidence intervals).</p>
+	<p>Limited model assessment is available for subperiods that use a nonstationary approach, since plotting positions are not compatible with nonstationarity.</p>
+</div>
+
+{% endblock %}
+
+{% block controls %}
+	{{ controlBar("model-assessment", "report-generation") }}
+{% endblock %}

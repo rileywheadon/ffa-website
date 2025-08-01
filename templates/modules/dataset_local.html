@@ -1,0 +1,24 @@
+<p><span class="font-semibold">File</span>: {{ results.file_name }}</p>
+
+<table>
+	<tr>
+		<td class="py-1 px-4 border border-gray-300">Years</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.year_min }}-{{ results.year_max }}</td>
+	</tr>
+	<tr>
+		<td class="py-1 px-4 border border-gray-300">Minimum</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.data_min }}</td>
+	</tr>
+	<tr>
+		<td class="py-1 px-4 border border-gray-300">Median</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.data_median }}</td>			
+	</tr>
+	<tr>
+		<td class="py-1 px-4 border border-gray-300">Maximum</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.data_max }}</td>
+	</tr>
+	<tr>
+		<td class="py-1 px-4 border border-gray-300">Missing Values</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.data_missing }}</td>
+	</tr>
+</table>

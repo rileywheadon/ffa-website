@@ -2,7 +2,7 @@
 
   <a 
 		class="row-start-2 flex flex-row items-center text-white cursor-pointer transform transition duration-300 ease-out hover:-translate-y-[4px]"
-		{% if position < stage %} href="/view-previous-stage/{{ position }}" {% endif %}
+		{% if position < stage %} href="/{{ name.replace(' ', '-') | lower }}" {% endif %}
 	>
 
 		{% if position < stage %}

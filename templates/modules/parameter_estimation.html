@@ -1,0 +1,56 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+{% from "status_bar.html" import statusBar %}
+{% from "control_bar.html" import controlBar %}
+
+{% block status %} 
+	{{ statusBar(6) }} 
+{% endblock %}
+
+{% block module_left %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{{ resultItem("estimation", block.estimation, block.period, options) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_right %}
+
+<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>Given an approach (i.e. S-FFA or NS-FFA) and a probability distribution, this module estimates the parameters. Under nonstationarity, the location and/or scale parameter is a function of the form <i>f(t) = c<sub>0</sub> + c<sub>1</sub>t</i>.</p>
+</div>
+
+<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Estimated Parameters</div>
+
+	<div class="grow flex flex-col">
+		<div class="grow"> 
+
+			{% for i in range(results | length) %}
+
+				{% set block = results[i] %}
+				{% set start = block.period[0] %}
+				{% set end = block.period[1] %}
+
+				<div>
+					<span class="font-semibold">{{ start }}-{{ end }}</span>: 
+					{{ block.estimation.params }}
+				</div>
+
+			{% endfor %}
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}
+
+{% block controls %} 
+	{{ controlBar("parameter-estimation", "uncertainty-quantification") }} 
+{% endblock %}

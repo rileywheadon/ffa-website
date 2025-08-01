@@ -29,23 +29,7 @@ fetch("/static/data/stations.json")
 
 			// Make an API request on click
 			marker.on("click", function () {
-				fetch("/dataset-geomet", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
-					},
-					body: JSON.stringify({ 
-						number: number,
-						name: name
-					})  
-			  	})
-				.then(response => response.text())
-				.then(html => {
-					document.getElementById("01-sidebar").innerHTML = html;
-				})
-				.catch(err => {
-					console.error("Failed to load station info:", err);
-				});
+				window.location.href = `/dataset-geomet/${number}/${name}`
 			});
 
 		});

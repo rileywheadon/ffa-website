@@ -1,0 +1,11 @@
+<div 
+  class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/50 backdrop-brightness-50"
+  id="modal-backdrop"
+  @click.self="document.getElementById('modal-container').innerHTML = ''"
+>
+  <div class="bg-white p-6 rounded-lg shadow-xl w-[70%] max-w-3xl h-fit flex flex-col min-h-0">
+
+		<img src="{{ plot }}" class="max-w-2xl"/>
+
+	</div>
+</div>

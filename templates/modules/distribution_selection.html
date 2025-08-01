@@ -1,0 +1,66 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+{% from "status_bar.html" import statusBar %}
+{% from "control_bar.html" import controlBar %}
+
+{% block status %} {{ statusBar(5) }} {% endblock %}
+
+{% block module_left %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+		{% for block in results %}
+		{{ resultItem("selection", block.selection, block.period) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_right %}
+
+<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>The method of L-moments is used to recommend a probability distribution for each subperiod. For subperiods using a nonstationary model, the data is decomposed before the L-moments are computed.</p>
+</div>
+
+<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Select Distributions</div>
+
+	<form 
+		action="/parameter-estimation"
+		method="POST"
+		class="grow flex flex-col"
+		id="distribution-selection"
+	>
+		<div class="grow"> 
+
+			<p>Select a distribution for each subperiod. Must be GUM, NOR, LNO, GEV, GLO, GNO, PE3, LP3, or WEI. For more information about the probability distributions supported by the FFA framework and a list of acronyms, see <a href="https://rileywheadon.github.io/ffa-docs/probability-distributions/" class="text-sky-600 underline">here</a>.</p>
+
+			{% for i in range(results | length) %}
+
+				{% set block = results[i] %}
+				{% set start = block.period[0] %}
+				{% set end = block.period[1] %}
+
+				<div class="mt-4">
+					<span class="font-semibold">{{ start }}-{{ end }}</span>:
+					<input 
+						name="{{ i }}-distribution"
+						class="border-2 rounded-md border-sky-600 text-center w-11 px-1 ml-1" 
+						maxlength="3"
+						type="text"
+						value="{{ block.selection.recommendation }}"
+					>
+				</div>
+
+			{% endfor %}
+		</div>
+
+	</form>
+</div>
+
+{% endblock %}
+
+{% block controls %}
+	{{ controlBar("distribution-selection", "parameter-estimation", form = True) }}
+{% endblock %}

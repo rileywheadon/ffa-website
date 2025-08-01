@@ -1,0 +1,32 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+{% from "status_bar.html" import statusBar %}
+{% from "control_bar.html" import controlBar %}
+
+{% block status %} 
+	{{ statusBar(7) }} 
+{% endblock %}
+
+{% block module_left %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{{ resultItem("uncertainty", block.uncertainty, block.period, options) }}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block module_right %}
+
+<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>Given a fitted probability model, this module estimates the return levels and confidence intervals. The <i>return level</i> is the magnitude of the annual maximum event, measured in m<sup>3</sup>/s. The <i>return period</i> of a flood is the expected number of years between annual maximum events of equal or greater magnitude.</p>
+</div>
+
+{% endblock %}
+
+{% block controls %}
+	{{ controlBar("uncertainty-quantification", "model-assessment") }}
+{% endblock %}

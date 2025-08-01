@@ -1,0 +1,45 @@
+{% macro controlBar(current, next, form = False) %}
+
+	<div class="w-full grid grid-cols-3 justify-stretch gap-x-2 text-center">
+		<a 
+			class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow cursor-pointer"
+			hx-get="/edit-options"
+			hx-target="#modal-container"
+  		hx-swap="innerHTML"
+			@click="loading = true;"
+		>
+			Options	
+			<i class="fa fa-cog ml-1" aria-hidden="true"></i>
+		</a>
+		<a 
+			class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow"
+			href="/{{ current }}?repeat=true"
+			@click="loading = true;"
+		>
+			Repeat Module	
+			<i class="fa fa-repeat ml-1" aria-hidden="true"></i>
+		</a>
+		{% if not form %}
+			<a 
+				class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
+				href="/{{ next }}"
+				@click="loading = true;"
+			>
+				Next Module	
+				<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
+			</a>
+		{% else %}
+			<button 
+				class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
+				type="submit"
+				form="{{ current }}"
+				@click="loading = true;"
+			>
+				Next Module	
+				<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
+			</a>
+
+		{% endif %}
+	</div>
+
+{% endmacro %}
