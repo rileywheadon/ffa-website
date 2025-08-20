@@ -68,15 +68,19 @@ def get_or_create_options():
 
     # Initialize a new options object, save to Valkey
     options = {
-        "significance_level": 0.05,
+        "alpha": 0.05,
         "bbmk_samples": 10000,
-        "selection_method": "L-distance",
+        "window_size": 10,
+        "window_step": 5,
+        "selection": "L-distance",
+        "distribution": "None",
         "z_samples": 10000,
         "s_estimation": "L-moments",
         "ns_estimation": "MLE",
         "gev_prior": [6, 9],
         "s_uncertainty": "Bootstrap",
         "ns_uncertainty": "RFPL",
+        "ns_slices": [1900, 1925, 1950, 1975, 2000, 2025],
         "return_periods": [2, 5, 10, 20, 50, 100],
         "bootstrap_samples": 1000,
         "rfpl_tolerance": 0.1,
@@ -85,6 +89,38 @@ def get_or_create_options():
 
     write_to_valkey(uid, {"options": options})
     return options
+
+
+def hydrate_options(options):
+    return {
+        "alpha": float(options["alpha"]),
+        "bbmk_samples": int(options["bbmk_samples"]),
+        "window_size": int(options["window_size"]),
+        "window_step": int(options["window_step"]),
+        "selection": options["selection"],
+        "distribution": options["distribution"],
+        "z_samples": int(options["z_samples"]),
+        "s_estimation": options["s_estimation"],
+        "ns_estimation": options["ns_estimation"],
+        "gev_prior": list(map(float, options["gev_prior"].split(","))),
+        "s_uncertainty": options["s_uncertainty"],
+        "ns_uncertainty": options["ns_uncertainty"],
+        "ns_slices": list(map(int, options["ns_slices"].split(","))),
+        "return_periods": list(map(float, options["return_periods"].split(","))),
+        "bootstrap_samples": int(options["bootstrap_samples"]),
+        "rfpl_tolerance": float(options["rfpl_tolerance"]),
+        "pp_formula": options["pp_formula"]
+    }
+
+
+def dehydrate_options(options):
+    result = {}
+    for key, value in options.items():
+        if isinstance(value, list):
+            result[key] = ", ".join(str(v) for v in value)
+        else:
+            result[key] = str(value)
+    return result
 
 
 def access_r_api(url, data):
@@ -116,21 +152,23 @@ def module_handler(endpoint, repeat):
 
     # List of route functions for FFA modules
     routes = [
-        "dataset_selection",
-        "change_point_detection",
-        "trend_detection",
-        "approach_selection",
-        "distribution_selection",
-        "parameter_estimation",
-        "uncertainty_quantification",
-        "model_assessment",
-        "report_generation"
+        ["dataset_selection"],
+        ["change_point_detection", "splits"],
+        ["trend_detection"],
+        ["approach_selection", "structures"],
+        ["distribution_selection", "distributions"],
+        ["parameter_estimation"],
+        ["uncertainty_quantification"],
+        ["model_assessment"],
+        ["report_params"]
     ]
 
     # Delete subsequent stages from Redis, including the current stage if repeat is True
-    position = routes.index(endpoint)
+    position = [r[0] for r in routes].index(endpoint)
+
     for i in range(position + int(not repeat), 9):
-        remove_from_valkey(uid, routes[i])
+        for route in routes[i]: 
+            remove_from_valkey(uid, route)
 
     # Check if results for current endpoint are stored in Redis
     return read_from_valkey(uid, endpoint)
@@ -151,33 +189,129 @@ def index():
 
 @app.route("/edit-options", methods = ["GET"])
 def edit_options():
-    options = get_or_create_options()
+    uid = get_or_create_uid()
+    options = dehydrate_options(get_or_create_options())
+
+    # Save the referrer (URL from which the settings were opened)
+    write_to_valkey(uid, {"referrer": request.referrer})
     return render_template("options_modal.html", options = options)
 
 
 @app.route("/save-options", methods = ["GET", "POST"])
 def save_options():
+
     uid = get_or_create_uid()
     options = request.form.to_dict()
 
-    payload = {
-        "significance_level": float(options["significance_level"]),
-        "bbmk_samples": int(options["bbmk_samples"]),
-        "selection_method": options["selection_method"],
-        "z_samples": int(options["z_samples"]),
-        "s_estimation": options["s_estimation"],
-        "ns_estimation": options["ns_estimation"],
-        "gev_prior": list(map(int, options["gev_prior"].split(","))),
-        "s_uncertainty": options["s_uncertainty"],
-        "ns_uncertainty": options["ns_uncertainty"],
-        "return_periods": list(map(int, options["return_periods"].split(","))),
-        "bootstrap_samples": int(options["bootstrap_samples"]),
-        "rfpl_tolerance": float(options["rfpl_tolerance"]),
-        "pp_formula": options["pp_formula"]
-    }
+    # Helper function to check if a string is a number
+    def isnumber(s: str) -> bool:
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
 
-    write_to_valkey(uid, {"options": payload})
-    return redirect(request.referrer)
+    # Helper function for failing option validation
+    def err(error_option, error_condition):
+        response = make_response()
+        response.headers["HX-Reswap"] = "innerHTML"
+        response.headers["HX-Retarget"] = "#modal-container"
+
+        # Add the template
+        response.data = render_template(
+            "options_modal.html",
+            options = options,
+            error_option = error_option,
+            error_condition = error_condition
+        )
+
+        return response
+
+    # Validate 'alpha' option
+    if not isnumber(options["alpha"]): 
+        return err("Significance Level", "a number")
+
+    if float(options["alpha"]) < 0.01 or float(options["alpha"]) > 0.10:
+        return err("Significance Level", "must be between 0.01 and 0.10")
+
+    # Validate 'bbmk_samples' option
+    if not options["bbmk_samples"].isdigit(): 
+        return err("BBMK Samples", "an integer")
+
+    # Validate 'window_size' option
+    if not options["window_size"].isdigit(): 
+        return err("Window Size", "an integer")
+
+    # Validate 'window_step' option
+    if not options["window_step"].isdigit(): 
+        return err("Window Step", "an integer")
+
+    # Validate 'z_samples' option
+    if not options["z_samples"].isdigit(): 
+        return err("Z-Satatistic Samples", "an integer")
+
+    # Validate 'gev_prior' option
+    if len(options["gev_prior"].split(",")) != 2: 
+        return err("GEV Prior", "a vector of length 2")
+
+    gev_prior = options["gev_prior"].replace(" ", "").split(",")
+    if not all([isnumber(x) for x in gev_prior]): 
+        return err("GEV Prior", "a vector of positive numbers")
+
+    if any([float(x) <= 0 for x in gev_prior]): 
+        return err("GEV Prior", "a vector of positive numbers")
+
+    # Validate 'ns_slices' option
+    ns_slices = options["ns_slices"].replace(" ", "").split(",")
+    if not all([isnumber(x) for x in ns_slices]): 
+        return err("Nonstationary Slices", "a vector of positive numbers")
+
+    if any([float(x) <= 0 for x in ns_slices]): 
+        return err("Nonstationary Slices", "a vector of positive numbers")
+
+    # Validate 'return_periods' option
+    return_periods = options["return_periods"].replace(" ", "").split(",")
+    if not all([isnumber(x) for x in return_periods]): 
+        return err("Return Periods", "a vector of numbers greater than 1")
+
+    if any([float(x) <= 1 for x in return_periods]): 
+        return err("Return Periods", "a vector of numbers greater than 1")
+
+    # Validate 'bootstrap_samples' option
+    if not options["bootstrap_samples"].isdigit(): 
+        return err("Parametric Bootstrap Samples", "an integer")
+
+    # Validate 'rfpl_tolerance' option
+    if not isnumber(options["rfpl_tolerance"]): 
+        return err("RFPL Tolerance", "a number")
+
+    if float(options["rfpl_tolerance"]) <= 0:
+        return err("RFPL Tolerance", "must be positive")
+
+    # Check that distribution is GEV if using GMLE parameter estimation 
+    if (options["s_estimation"] == "GMLE" and options["distribution"] != "GEV"):
+        return err("Distribution Override", "GEV if using GMLE estimation")
+
+    if (options["ns_estimation"] == "GMLE" and options["distribution"] != "GEV"):
+        return err("Distribution Override", "GEV if using GMLE estimation")
+        
+    # Check that RFPL/RFGPL uncertainty quantification uses valid parameter estimation
+    if (options["s_uncertainty"] == "RFPL" and options["s_estimation"] != "MLE"):
+        return err("Stationary Estimation Method", "MLE if using RFPL uncertainty")
+
+    if (options["ns_uncertainty"] == "RFPL" and options["ns_estimation"] != "MLE"):
+        return err("Nonstationary Estimation Method", "MLE if using RFPL uncertainty")
+
+    if (options["s_uncertainty"] == "RFGPL" and options["s_estimation"] != "GMLE"):
+        return err("Stationary Estimation Method", "GMLE if using RFGPL uncertainty")
+
+    if (options["ns_uncertainty"] == "RFGPL" and options["ns_estimation"] != "GMLE"):
+        return err("Nonstationary Estimation Method", "GMLE if using RFGPL uncertainty")
+
+    # Save options to database
+    write_to_valkey(uid, {"options": hydrate_options(options)})
+    referrer = read_from_valkey(uid, "referrer")
+    return redirect(referrer)
 
 
 @app.route("/dataset-selection", methods = ["GET"])
@@ -387,7 +521,17 @@ def trend_detection():
 @app.route("/approach-selection", methods = ["GET", "POST"])
 def approach_selection():
     uid = get_or_create_uid()
+    template = "modules/approach_selection.html"
 
+    # If results for this module are cached, use them
+    repeat = request.args.get("repeat")
+    options = get_or_create_options()
+    results = module_handler("approach_selection", repeat)
+
+    if results is not None:
+        return render_template(template, results = results, options = options)
+
+    # Save the split points if the user updated them
     if request.method == "POST":
 
         years = read_from_valkey(uid, "years")
@@ -406,7 +550,8 @@ def approach_selection():
         "trend_detection": read_from_valkey(uid, "trend_detection"),
     }
 
-    return render_template("modules/approach_selection.html", eda = eda)
+    return render_template(template, eda = eda)
+
 
 @app.route("/distribution-selection", methods = ["GET", "POST"])
 def distribution_selection():
@@ -469,6 +614,8 @@ def parameter_estimation():
     distributions = read_from_valkey(uid, "distributions")
 
     if not distributions:
+        distributions = []
+
         for i in range(len(splits) + 1):
             distribution = request.form.get(f"{i}-distribution")
             distributions.append(distribution)
@@ -502,8 +649,8 @@ def uncertainty_quantification():
     options = get_or_create_options()
     results = module_handler("uncertainty_quantification", repeat)
 
-    # if results is not None:
-    #     return render_template(template, results = results, options = options)
+    if results is not None:
+        return render_template(template, results = results, options = options)
     
     # Hit the R API
     payload = {
@@ -514,8 +661,6 @@ def uncertainty_quantification():
         "distributions": read_from_valkey(uid, "distributions"),
         "options": options
     }
-
-    print(options)
 
     results = access_r_api("uncertainty-quantification", payload)
 
@@ -534,10 +679,16 @@ def model_assessment():
     options = get_or_create_options()
     results = module_handler("model_assessment", repeat)
 
-    # if results is not None:
-    #     return render_template(template, results = results, options = options)
-    print(read_from_valkey(uid, "parameter_estimation"))
+    if results is not None:
+        return render_template(template, results = results, options = options)
 
+    # Get the confidence intervals from uncertainty quantification
+    uncertainty = read_from_valkey(uid, "uncertainty_quantification")
+
+    intervals = list(map(
+        lambda x: x["uncertainty"]["ci"] if "ci" in x["uncertainty"] else None,
+        uncertainty
+    ))
     
     # Hit the R API
     payload = {
@@ -546,13 +697,11 @@ def model_assessment():
         "splits": read_from_valkey(uid, "splits"),
         "structures": read_from_valkey(uid, "structures"),
         "distributions": read_from_valkey(uid, "distributions"),
-        "estimation_list": read_from_valkey(uid, "parameter_estimation"),
-        "uncertainty_list": read_from_valkey(uid, "uncertainty_quantification"),
+        "intervals": intervals,
         "options": options
     }
 
     results = access_r_api("model-assessment", payload)
-    print(results)
 
     # Write the results to valkey, render the distribution selection template
     write_to_valkey(uid, {"model_assessment": results})
@@ -561,7 +710,104 @@ def model_assessment():
 
 @app.route("/report-generation", methods = ["GET"])
 def report_generation():
-    return render_template("modules/report_generation.html")
+    uid = get_or_create_uid()
+    options = get_or_create_options()
+    template = "modules/report_generation.html"
+
+    # Get the submodule results 
+    r01 = read_from_valkey(uid, "change_point_detection")
+    r02 = read_from_valkey(uid, "trend_detection")
+    r03 = read_from_valkey(uid, "distribution_selection")
+    r04 = read_from_valkey(uid, "parameter_estimation")
+    r05 = read_from_valkey(uid, "uncertainty_quantification")
+    r06 = read_from_valkey(uid, "model_assessment")
+    submodule_results = r01 + r02 + r03 + r04 + r05 + r06
+
+    # Determine the recommended split points
+    pettitt = r01[0]["tests"]["pettitt"]
+    mks = r01[0]["tests"]["mks"]
+
+    if pettitt["p_value"] < mks["p_value"]:
+        recommended_splits = list(map(lambda x: x["year"], pettitt["change_points"]))
+    else:
+        recommended_splits = list(map(lambda x: x["year"], mks["change_points"]))
+
+    if not pettitt["reject"] and not mks["reject"]:
+        recommended_splits = []
+
+    # Determine the recommended nonstationary structures
+    recommended_structures = []
+
+    for block in r02:
+        recommended_structures.append({
+            "location": "sens_mean" in block.keys(),
+            "scale": "sens_variance" in block.keys()
+        })
+
+    # Determine the recommended approach
+    if len(recommended_splits) == 0:
+        structure = recommended_structures[0]
+        if not structure["location"] and not structure["scale"]:
+            recommended_approach = "S-FFA" 
+        else:
+            recommended_approach = "NS-FFA"
+    else:
+        recommended_approach = "Piecewise NS-FFA"
+
+    # Create a dictionary with the EDA recommendations
+    eda_recommendations = {
+        "approach": recommended_approach,
+        "ns_splits": recommended_splits,
+        "ns_structures": recommended_structures
+    }
+
+    # Determine the model assumptions
+    model_splits = read_from_valkey(uid, "splits")
+    model_structures = read_from_valkey(uid, "structures")
+    if len(model_splits) == 0:
+        if all(not value for s in model_structures for value in s.values()):
+            model_approach = "S-FFA"
+        else:
+            model_approach = "NS-FFA"
+    else:
+        model_approach = "Piecewise NS-FFA"
+
+    # Create a dictionary with the model assumptions
+    modelling_assumptions = {
+        "approach": model_approach,
+        "ns_splits": model_splits,
+        "ns_structures": model_structures
+    }
+
+    # Create a dictionary to pass to framework_report
+    report_params = {
+        "eda_recommendations": eda_recommendations,
+        "modelling_assumptions": modelling_assumptions,
+        "submodule_results": submodule_results
+    }
+
+    # Save report parameters to valkey
+    write_to_valkey(uid, {"report_params": report_params})
+    return render_template(template, options = options, results = submodule_results)
+
+
+# TODO: Implement report generation for multiple filetypes
+@app.route("/download-report", methods = ["GET", "POST"])
+def download_report():
+    uid = get_or_create_uid()
+    filetypes = request.form.to_dict().keys()
+
+    for ft in filetypes:
+        print(ft)
+
+    report_params = read_from_valkey(uid, "report_params")
+    buffer = access_r_api("report-html", {"report_params": report_params})
+
+    return Response(
+        buffer,
+        mimetype="text/html",
+        headers={"Content-Disposition": f"attachment; filename=report.html"}
+    )
 
 
 if __name__ == "__main__":

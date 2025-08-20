@@ -1,0 +1,42 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>Runs Test (Mean)</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<ul class="list-disc list-inside ml-2">
+		<li>The Runs test yielded a p-value of {{ p_value }}.</li>
+		{% if result.reject %}
+			<li>At a significance level of {{ options.alpha }}, we reject the null hypothesis. </li>
+			<li>Therefore, there is evidence that the residuals from Sen's trend estimator are nonrandom.</li>
+			<li>A linear model may not be suitable for the trend in the mean.</li>
+		{% else %}
+			<li>At a significance level of {{ options.alpha }}, we fail to reject the null hypothesis. </li>
+			<li>Therefore, there is NO evidence that the residuals from Sen's trend estimator are nonrandom.</li>
+			<li>A linear model should be suitable for the trend in the mean.</li>
+		{% endif %}
+	</ul>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div class="mb-2">Additional details:</div>
+
+	<ul class="list-disc list-inside ml-2">
+		<li>Null Hypothesis: {{ result.null_hypothesis }}</li>
+		<li>Alternative Hypothesis: {{ result.alternative_hypothesis }}</li>
+	</ul>
+
+	<div class="mt-2">For more information about the Runs test, see <a href="https://rileywheadon.github.io/ffa-framework/articles/eda-trend-ams-mean.html#runs-test" class="underline text-sky-600">here</a>.</div>
+
+	
+{% endblock %}

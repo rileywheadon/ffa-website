@@ -1,0 +1,12 @@
+rwheadon.dev {
+	encode zstd gzip
+	log
+
+	# All public traffic goes to Flask
+	handle {
+		reverse_proxy flask:5000
+	}
+
+	# Automatic Let's Encrypt
+}
+

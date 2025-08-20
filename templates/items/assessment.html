@@ -1,0 +1,89 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>Model Assessment</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<table class="text-center table-auto mt-4 w-2/3 mx-auto">
+		<tr>
+			<td class="p-1 border border-gray-300 underline">Metric</td>
+			<td class="p-1 border border-gray-300 underline">Value</td>
+		</tr>
+		{% if result.metrics.R2 %}
+			<tr>
+				<td class="p-1 border border-gray-300">Plotting Position: R<sup>2</sup></td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.R2 }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.RMSE %}
+			<tr>
+				<td class="p-1 border border-gray-300">Plotting Position: RMSE</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.RMSE }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.bias %}
+			<tr>
+				<td class="p-1 border border-gray-300">Plotting Position: Bias</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.bias }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.AIC_RMSE %}
+			<tr>
+				<td class="p-1 border border-gray-300">Akaike Information Criterion</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.AIC_RMSE }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.BIC_RMSE %}
+			<tr>
+				<td class="p-1 border border-gray-300">Bayesian Information Criterion</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.BIC_RMSE }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.AIC_MLL %}
+			<tr>
+				<td class="p-1 border border-gray-300">Akaike Information Criterion (MLL)</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.AIC_MLL }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.BIC_MLL %}
+			<tr>
+				<td class="p-1 border border-gray-300">Bayesian Information Criterion (MLL)</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.BIC_MLL }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.AW %}
+			<tr>
+				<td class="p-1 border border-gray-300">Confidence Intervals: Average Width</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.AW }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.POC %}
+			<tr>
+				<td class="p-1 border border-gray-300">Confidence Intervals: Percentage of Coverage</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.POC }}</td>
+			</tr>
+		{% endif %}
+		{% if result.metrics.CWI %}
+			<tr>
+				<td class="p-1 border border-gray-300">Confidence Intervals: Confidence Width indicator</td>
+				<td class="p-1 border border-gray-300">{{ result.metrics.CWI }}</td>
+			</tr>
+		{% endif %}
+
+	</table>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div>For more information about model assessment, see <a href="https://rileywheadon.github.io/ffa-framework/articles/ffa-model-assessment.html" class="underline text-sky-600">here</a>.</div>
+	
+{% endblock %}

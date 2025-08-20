@@ -1,0 +1,26 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>Sen's Trend Estimator (Variability)</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<div class="mb-2">Sen's trend estimator found a trend in the standard deviation with the equation <i>y = {{ result.slope | round(2) }}x + {{ result.intercept | round(3) }}</i>.</div>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div class="mb-2">Additional details: The <i>x</i> variable in the equation above uses a rescaled version of the years with the formula <i>(Years - 1900) / 100</i>.</div>
+
+	<div>For more information about Sen's trend estimator, see <a href="https://rileywheadon.github.io/ffa-framework/articles/eda-trend-ams-variability.html#sens-trend-estimator" class="underline text-sky-600">here</a>.</div>
+
+	
+{% endblock %}

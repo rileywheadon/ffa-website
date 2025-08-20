@@ -3,7 +3,7 @@
 <table>
 	<tr>
 		<td class="py-1 px-4 border border-gray-300">Years</td>
-		<td class="py-1 px-4 border border-gray-300">{{ results.year_min }}-{{ results.year_max }}</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.years_min }}-{{ results.years_max }}</td>
 	</tr>
 	<tr>
 		<td class="py-1 px-4 border border-gray-300">Minimum</td>
@@ -11,14 +11,14 @@
 	</tr>
 	<tr>
 		<td class="py-1 px-4 border border-gray-300">Median</td>
-		<td class="py-1 px-4 border border-gray-300">{{ results.data_median }}</td>			
+		<td class="py-1 px-4 border border-gray-300">{{ results.data_med }}</td>			
 	</tr>
 	<tr>
 		<td class="py-1 px-4 border border-gray-300">Maximum</td>
 		<td class="py-1 px-4 border border-gray-300">{{ results.data_max }}</td>
 	</tr>
 	<tr>
-		<td class="py-1 px-4 border border-gray-300">Missing Values</td>
-		<td class="py-1 px-4 border border-gray-300">{{ results.data_missing }}</td>
+		<td class="py-1 px-4 border border-gray-300"># of Missing Values</td>
+		<td class="py-1 px-4 border border-gray-300">{{ results.missing_count }}</td>
 	</tr>
 </table>

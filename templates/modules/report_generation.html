@@ -1,0 +1,114 @@
+{% extends "module.html" %}
+
+{% from "macros.html" import resultItem %}
+{% from "status_bar.html" import statusBar %}
+{% from "control_bar.html" import controlBar %}
+
+{% block status %} 
+	{{ statusBar(9) }} 
+{% endblock %}
+
+{% block module_left %}
+
+<form 
+	action="/download-report"
+	method="POST"
+	class="flex flex-col w-full rounded-lg border-gray-600 border-2 p-4 grow"
+>
+	<div class="underline mb-4">Select file formats:</div>
+	<div>
+		<input type="checkbox" name="html">
+		<span>HTML</span>
+	</div>
+	<div>
+		<input type="checkbox" name="pdf">
+		<span>PDF</span>
+	</div>
+	<div>
+		<input type="checkbox" name="md">
+		<span>Markdown</span>
+	</div>
+	<div>
+		<input type="checkbox" name="json">
+		<span>JSON</span>
+	</div>
+	<div class="self-end flex flex-row w-full justify-right mt-auto text-sm">
+		<button 
+			type="submit" 
+			class="bg-sky-600 text-white font-semibold rounded-lg py-2 px-4 ml-auto"
+			disabled
+		>
+			Download Reports (Coming Soon)
+		</button>
+	</div>
+</form>
+
+{% endblock %}
+
+{% block controls %}
+	{{ controlBar("report-generation", "", finish = True) }}
+{% endblock %}
+
+{% block module_right %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+
+	{% set headers = [] %}
+
+	{% for block in results %}
+
+		{% if block.name not in headers %}
+			{% set headers = headers.append(block.name) %}
+			<div class="underline text-center mt-2">{{ block.name }}</div>
+		{% endif %}
+
+		{% if block.name in ["Change Point Detection", "Trend Detection"] %}
+
+			{% for key, value in block.tests.items() %} 
+				{% with start=block.start, end=block.end, result=value, options=options %}
+
+					<!-- Improved p-value formatting -->
+					{% if "p_value" not in value %}
+						{% set p_value = "" %}
+					{% elif value.p_value > 0.001 %}
+						{% set p_value = "%.3f" % value.p_value %}
+					{% else %}
+						{% set p_value = "<0.001" %}
+					{% endif %}
+
+					{% include "items/" ~ key ~ ".html" %}		
+
+				{% endwith %}
+			{% endfor %}
+
+		{% elif "selection" in block %}
+
+			{% with start=block.start, end=block.end, result=block.selection %}
+				{% include "items/selection.html" %}
+			{% endwith %}
+			
+		{% elif "estimation" in block %}
+
+			{% with start=block.start, end=block.end, result=block.estimation %}
+				{% include "items/estimation.html" %}
+			{% endwith %}
+
+		{% elif "uncertainty" in block %}
+
+			{% with start=block.start, end=block.end, result=block.uncertainty %}
+				{% include "items/uncertainty.html" %}
+			{% endwith %}
+
+		{% elif "assessment" in block %}
+
+			{% with start=block.start, end=block.end, result=block.assessment %}
+				{% include "items/assessment.html" %}
+			{% endwith %}
+
+		{% endif %}
+		
+	{% endfor %}
+
+</div>
+
+{% endblock %}

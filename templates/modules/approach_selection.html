@@ -1,6 +1,6 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem, spinner %}
+{% from "macros.html" import spinner %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -10,35 +10,44 @@
 
 {% block module_left %}
 
-<div class="grid grid-cols-2 border border-gray-300 rounded-lg w-full h-full p-6">
+<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-4">
+
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+
+	<p>In approach selection, we finalize the subperiods and model structures for the analysis. If you are not satisfied with the recommendations from EDA, you can always explore the dataset further by clicking on "Change Point Detection" or "Trend Detection" in the status bar. Remember, <i>approach selection should always incorporate station-specific knowledge when possible</i>.</p>
+
+</div>
+
+{% endblock %}
+
+{% block controls %}
+	{{ controlBar("approach-selection", "distribution-selection", form = True) }}
+{% endblock %}
+
+{% block module_right %}
+
+<div class="grid grid-cols-2 border-2 border-gray-600 rounded-lg w-full h-full p-6">
 
 	<div class="col-span-1 border-r border-gray-300 pr-6 flex flex-col">
 
 		<div class="flex-none w-full text-center underline mb-6">Recommendations from EDA</div>
 
-		{% set pettitt = eda["change_point_detection"]["items"]["pettitt"] %} 
-		{% set mks = eda["change_point_detection"]["items"]["mks"] %} 
+		{% set pettitt = eda.change_point_detection[0].tests.pettitt %} 
+		{% set mks = eda.change_point_detection[0].tests.mks %} 
 
-		{% set change_year = pettitt.change_year %}
-		{% set change_years = mks.change_df | map(attribute = "year") %} 
-
-		<div class="flex flex-row items-start h-14">
-			<span class="font-semibold">Recommended Split Points</span>:&nbsp;
+		<div class="flex flex-row items-start mb-2">
+			<span>Recommended Split Points</span>:&nbsp;
 			{% if not pettitt.reject and not mks.reject %}None{% endif %}
 		</div>
 		<div>
 			<ul class="list-disc list-inside">
-				{% if pettitt.reject %}
-					<li>
-						{{ change_year }} 
-						(from Pettitt test, <i>p={{ pettitt.p_value }}</i>)
-					</li>
-				{% endif %}
-				{% for year in change_years %}
-					<li>
-						{{ year }} 
-						(from MKS test <i>p={{ mks.p_value }}</i>)
-					</li>
+				{% for cp in pettitt.change_points %}
+					{% set p_value = "=%.3f" % cp.p_value if cp.p_value > 0.001 else "<0.001" %}
+					<li>{{ cp.year }} (from Pettitt test, <i>p{{ p_value }}</i>)</li>
+				{% endfor %}
+				{% for cp in mks.change_points %}
+					{% set p_value = "=%.3f" % cp.p_value if cp.p_value > 0.001 else "<0.001" %}
+					<li>{{ cp.year }} (from MKS test <i>p{{ p_value }}</i>)</li>
 				{% endfor %}
 			</ul>
 
@@ -46,15 +55,15 @@
 
 		<div>
 
-			<p class="font-semibold mb-2">Recommended Model Structures:</p>
+			<p class="my-2">Recommended Model Structures:</p>
 			<ul class="list-disc list-inside">
 				{% for block in eda.trend_detection %}
 					<li>
 
-						{% set start = block.period[0] %}
-						{% set end = block.period[1] %}
-						{% set location = "sens_mean" in block["items"].keys() %}
-						{% set scale = "sens_variance" in block["items"].keys() %}
+						{% set start = block.start %}
+						{% set end = block.end %}
+						{% set location = "sens_mean" in block.tests.keys() %}
+						{% set scale = "sens_variance" in block.tests.keys() %}
 
 						{{ start }}-{{ end }}: 
 						{% if location and scale %}
@@ -98,7 +107,7 @@
 			</button>
 		</form>
 
-		{% set breaks = [(eda.years | min)] + eda.splits + [(eda.years | max)] %}
+		{% set breaks = [(eda.years | min)] + eda.splits + [(eda.years | max) + 1] %}
 
 		<form
 			class="grow flex flex-col gap-y-8"
@@ -132,7 +141,7 @@
 			}">
 
 				<div class="flex flex-row items-start gap-x-2 mb-4">
-					{{ breaks[i] }}-{{ breaks[i + 1] }}:
+					{{ breaks[i] }}-{{ breaks[i + 1] - 1 }}:
 					<div class="border border-gray-300 rounded-lg w-48 flex flex-row cursor-pointer">
 						<div
 							@click="deactivate"
@@ -158,7 +167,7 @@
 							@change="ensureOneChecked('location')"
 						>
 						<span x-bind:class="disabled ? 'line-through' : ''" class="">
-							Trend in location parameter (mean)
+							Trend in location parameter
 						</span>
 					</label>
 					<label>
@@ -171,7 +180,7 @@
 							@change="ensureOneChecked('scale')"
 						>
 						<span x-bind:class="disabled ? 'line-through' : ''" class="">
-							Trend in scale parameter (variability)
+							Trend in scale parameter
 						</span>
 					</label>
 				</div>
@@ -187,18 +196,4 @@
 
 {% endblock %}
 
-{% block module_right %}
 
-<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-4">
-
-	<div class="flex-none w-full text-center underline">Module Summary</div>
-
-	<p>In approach selection, we finalize the subperiods and model structures for the analysis. If you are not satisfied with the recommendations from EDA, you can always explore the dataset further by clicking on "Change Point Detection" or "Trend Detection" in the status bar. Remember, <i>approach selection should always incorporate station-specific knowledge when possible</i>.</p>
-
-</div>
-
-{% endblock %}
-
-{% block controls %}
-	{{ controlBar("approach-selection", "distribution-selection", form = True) }}
-{% endblock %}

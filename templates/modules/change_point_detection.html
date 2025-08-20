@@ -8,32 +8,14 @@
 	{{ statusBar(2) }} 
 {% endblock %}
 
-{% set period = results["period"] %} 
-{% set pettitt = results["items"]["pettitt"] %} 
-{% set mks = results["items"]["mks"] %} 
-{% set change_year = pettitt["change_year"] %}
-{% set change_years = mks["change_df"] | map(attribute = "year") %} 
+{% set start = results[0].start %}
+{% set end = results[0].end %}
+{% set pettitt = results[0].tests.pettitt %} 
+{% set mks = results[0].tests.mks %} 
 
 {% block module_left %} 
 
-<div class="flex flex-col w-full h-full gap-y-2">
-	{{ resultItem("pettitt", pettitt, period, options) }}
-	{{ resultItem("mks", mks, period, options) }}
-</div>
-
-{% endblock %}
-
-{% block module_right %} 
-
-<div class="p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
-
-	<div class="flex-none w-full text-center underline">Module Summary</div>
-
-	<p>A change point is an abrupt shift or temporal pattern switch (e.g. beginning of a trend) in a time series. Change points indicate inhomogeneous periods, meaning a single model may not represent the entire record adequately. Instead, piecewise analysis should be applied to each homogeneous subperiod. <i>Always use case-specific knowledge about the station if possible.</i></p>
-
-</div>
-
-<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+<div class="grow p-4 border-2 border-gray-600 rounded-lg flex flex-col gap-y-2">
 
 	<div class="flex-none w-full text-center underline">Select Split Points</div>
 
@@ -42,17 +24,13 @@
 		{% if pettitt.reject or mks.reject %} 
 			<p>The split points detected during EDA are listed below:</p>
 			<ul class="list-disc list-inside mt-2">
-				{% if pettitt.reject %}
-					<li>
-						{{ change_year }} 
-						(from Pettitt test, <i>p={{ pettitt.p_value }}</i>)
-					</li>
-				{% endif %}
-				{% for year in change_years %}
-					<li>
-						{{ year }} 
-						(from MKS test <i>p={{ mks.p_value }}</i>)
-					</li>
+				{% for cp in pettitt.change_points %}
+					{% set p_value = "=%.3f" % cp.p_value if cp.p_value > 0.001 else "<0.001" %}
+					<li>{{ cp.year }} (from Pettitt test, <i>p{{ p_value }}</i>)</li>
+				{% endfor %}
+				{% for cp in mks.change_points %}
+					{% set p_value = "=%.3f" % cp.p_value if cp.p_value > 0.001 else "<0.001" %}
+					<li>{{ cp.year }} (from MKS test, <i>p{{ p_value }}</i>)</li>
 				{% endfor %}
 			</ul>
 		{% else %}
@@ -76,8 +54,48 @@
 
 </div>
 
+<div class="p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+
+	<p>A change point is an abrupt shift or temporal pattern switch (e.g. beginning of a trend) in a time series. Change points indicate inhomogeneous periods, meaning a single model may not represent the entire record adequately. Instead, piecewise analysis should be applied to each homogeneous subperiod. <i>Always use case-specific knowledge about the station if possible.</i></p>
+
+</div>
+
 {% endblock %}
 
 {% block controls %}
 	{{ controlBar("change-point-detection", "trend-detection", True) }}
 {% endblock %}
+
+{% block module_right %} 
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% with start=start, end=end, options=options, result=pettitt %}
+
+		<!-- Improved p-value formatting -->
+		{% if result.p_value > 0.001 %}
+			{% set p_value = "%.3f" % result.p_value %}
+		{% else %}
+			{% set p_value = "<0.001" %}
+		{% endif %}
+
+		{% include "items/pettitt.html" %}
+
+	{% endwith %}
+	{% with start=start, end=end, options=options, result=mks %}
+
+		<!-- Improved p-value formatting -->
+		{% if result.p_value > 0.001 %}
+			{% set p_value = "%.3f" % result.p_value %}
+		{% else %}
+			{% set p_value = "<0.001" %}
+		{% endif %}
+
+		{% include "items/mks.html" %}
+	{% endwith %}
+</div>
+
+{% endblock %}
+
+

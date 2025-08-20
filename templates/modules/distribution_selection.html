@@ -4,26 +4,13 @@
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
-{% block status %} {{ statusBar(5) }} {% endblock %}
+{% block status %} 
+	{{ statusBar(5) }} 
+{% endblock %}
 
 {% block module_left %}
 
-<div class="flex flex-col w-full h-full gap-y-2">
-		{% for block in results %}
-		{{ resultItem("selection", block.selection, block.period) }}
-	{% endfor %}
-</div>
-
-{% endblock %}
-
-{% block module_right %}
-
-<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
-	<div class="flex-none w-full text-center underline">Module Summary</div>
-	<p>The method of L-moments is used to recommend a probability distribution for each subperiod. For subperiods using a nonstationary model, the data is decomposed before the L-moments are computed.</p>
-</div>
-
-<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+<div class="grow border-2 border-gray-600 rounded-lg p-4 flex flex-col gap-y-2">
 	<div class="flex-none w-full text-center underline">Select Distributions</div>
 
 	<form 
@@ -39,18 +26,26 @@
 			{% for i in range(results | length) %}
 
 				{% set block = results[i] %}
-				{% set start = block.period[0] %}
-				{% set end = block.period[1] %}
+				{% set start = block.start %}
+				{% set end = block.end %}
 
 				<div class="mt-4">
 					<span class="font-semibold">{{ start }}-{{ end }}</span>:
 					<input 
 						name="{{ i }}-distribution"
-						class="border-2 rounded-md border-sky-600 text-center w-11 px-1 ml-1" 
+						class="border-2 rounded-md border-sky-600 text-center w-14 px-1 mx-1" 
 						maxlength="3"
 						type="text"
-						value="{{ block.selection.recommendation }}"
+						{% if options.distribution == "None" %}
+							value="{{ block.selection.recommendation }}"
+						{% else %}
+							value="{{ options.distribution }}"
+							readonly
+						{% endif %}
 					>
+					{% if options.distribution != "None" %}
+						<span class="text-red-600">(Overridden)</span>
+					{% endif %}
 				</div>
 
 			{% endfor %}
@@ -59,8 +54,27 @@
 	</form>
 </div>
 
+<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>The method of L-moments is used to recommend a probability distribution for each subperiod. For subperiods that use a nonstationary model, the data is decomposed before the L-moments are computed. <i>L-moment diagrams are generated using the decomposed data, not the original data</i>.</p>
+</div>
+
 {% endblock %}
 
 {% block controls %}
 	{{ controlBar("distribution-selection", "parameter-estimation", form = True) }}
 {% endblock %}
+
+{% block module_right %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{% with start=block.start, end=block.end, result=block.selection %}
+			{% include "items/selection.html" %}
+		{% endwith %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+

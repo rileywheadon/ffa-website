@@ -1,2 +1,4 @@
 venv/**
 static/data/**
+dump.rdb
+.env

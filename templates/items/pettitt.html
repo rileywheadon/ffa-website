@@ -1,0 +1,40 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>Pettitt Test</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<ul class="list-disc list-inside ml-2">
+		<li>The Pettitt test yielded a p-value of {{ p_value }}.</li>
+		{% if result.reject %}
+			<li>At a significance level of {{ options.alpha }}, we reject the null hypothesis. </li>
+			<li>Therefore, there is evidence of a change point in {{ result.change_points  | map(attribute = "year") | join(", ") }}.</li>
+		{% else %}
+			<li>At a significance level of {{ options.alpha }}, we fail to reject the null hypothesis. </li>
+			<li>Therefore, there is NO evidence of a change point.</li>
+		{% endif %}
+	</ul>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div class="mb-2">Additional details:</div>
+
+	<ul class="list-disc list-inside ml-2">
+		<li>Null Hypothesis: {{ result.null_hypothesis }}</li>
+		<li>Alternative Hypothesis: {{ result.alternative_hypothesis }}</li>
+	</ul>
+
+	<div class="mt-2">For more information about the Pettitt test, see <a href="https://rileywheadon.github.io/ffa-framework/articles/eda-change-points.html#pettitt-test" class="underline text-sky-600">here</a>.</div>
+
+	
+{% endblock %}

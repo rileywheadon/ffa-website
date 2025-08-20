@@ -5,20 +5,10 @@
 {% from "control_bar.html" import controlBar %}
 
 {% block status %} 
-	{{ statusBar(7) }} 
+	{{ statusBar(8) }} 
 {% endblock %}
 
 {% block module_left %}
-
-<div class="flex flex-col w-full h-full gap-y-2">
-	{% for block in results %}
-		{{ resultItem("assessment", block.assessment, block.period, options) }}
-	{% endfor %}
-</div>
-
-{% endblock %}
-
-{% block module_right %}
 
 <div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
 	<div class="flex-none w-full text-center underline">Module Summary</div>
@@ -32,3 +22,17 @@
 {% block controls %}
 	{{ controlBar("model-assessment", "report-generation") }}
 {% endblock %}
+
+{% block module_right %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{% with start=block.start, end=block.end, result=block.assessment %}
+			{% include "items/assessment.html" %}
+		{% endwith %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+

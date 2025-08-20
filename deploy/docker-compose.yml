@@ -1,0 +1,46 @@
+services:
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - flask
+      - plumber
+    networks: [appnet]
+
+  flask:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.flask
+    env_file:
+      - ../.env
+    depends_on:
+      - plumber
+      - valkey
+    networks: [appnet]
+
+  plumber:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.plumber
+    env_file:
+      - ../.env
+    networks: [appnet]
+
+  valkey:
+    image: valkey/valkey:7
+    # No on-disk state; no volumes.
+    networks: [appnet]
+
+networks:
+  appnet:
+
+volumes:
+  caddy_data:
+  caddy_config:
+

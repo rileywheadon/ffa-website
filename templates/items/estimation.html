@@ -1,0 +1,64 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>{{ result.method }} Parameter Estimation</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<div class="flex flex-col gap-y-1">
+		<p><span class="font-semibold">Method</span>: {{ result.method }}</p>
+		<p><span class="font-semibold">Distribution</span>: {{ result.distribution }}</p>
+		<p><span class="font-semibold">Parameters</span>:</p>
+		<ul class="list-disc list-inside ml-2">
+			<li>
+				Location:
+				<i>
+					{% if "ns_structure" not in result %}
+						{{ result.params[0] }}
+					{% elif not result.ns_structure.location %}
+						{{ result.params[0] }}
+					{% else %}
+						{{ result.params[0] }} + {{ result.params[1] }}t
+					{% endif %}
+				</i>
+			</li>
+			<li>
+				Scale:
+				<i>
+					{% if "ns_structure" not in result %}
+						{{ result.params[1] }}
+					{% elif not result.ns_structure.scale %}
+						{{ result.params[2] }}
+					{% else %}
+						{% set i = 1 + result.ns_structure.location %}
+						{{ result.params[i] }} + {{ result.params[i + 1] }}t
+					{% endif %}
+				</i>
+			</li>
+			<li>
+				Shape:
+				<i>
+					{% if result.distribution in ["GUM", "NOR", "LNO"] %}
+						N/A
+					{% else %}
+						{{ result.params[-1] }}
+					{% endif %}
+				</i>
+			</li>
+		</ul>
+	</div>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div>For more information about parameter estimation, see <a href="https://rileywheadon.github.io/ffa-framework/articles/parameter-estimation.html" class="underline text-sky-600">here</a>.</div>
+	
+{% endblock %}

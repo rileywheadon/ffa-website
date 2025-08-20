@@ -10,22 +10,7 @@
 
 {% block module_left %}
 
-<div class="flex flex-col w-full h-full gap-y-2">
-	{% for block in results %}
-		{{ resultItem("estimation", block.estimation, block.period, options) }}
-	{% endfor %}
-</div>
-
-{% endblock %}
-
-{% block module_right %}
-
-<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
-	<div class="flex-none w-full text-center underline">Module Summary</div>
-	<p>Given an approach (i.e. S-FFA or NS-FFA) and a probability distribution, this module estimates the parameters. Under nonstationarity, the location and/or scale parameter is a function of the form <i>f(t) = c<sub>0</sub> + c<sub>1</sub>t</i>.</p>
-</div>
-
-<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+<div class="grow border-2 border-gray-600 rounded-lg p-4 flex flex-col gap-y-2 w-full">
 
 	<div class="flex-none w-full text-center underline">Estimated Parameters</div>
 
@@ -35,10 +20,10 @@
 			{% for i in range(results | length) %}
 
 				{% set block = results[i] %}
-				{% set start = block.period[0] %}
-				{% set end = block.period[1] %}
+				{% set start = block.start %}
+				{% set end = block.end %}
 
-				<div>
+				<div class="mb-2">
 					<span class="font-semibold">{{ start }}-{{ end }}</span>: 
 					{{ block.estimation.params }}
 				</div>
@@ -49,8 +34,27 @@
 
 </div>
 
+<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2 w-full">
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+	<p>Given an approach (i.e. S-FFA or NS-FFA) and a probability distribution, this module estimates the parameters. Under nonstationarity, the location and/or scale parameter is a function of the form <i>f(t) = c<sub>0</sub> + c<sub>1</sub>t</i>.</p>
+</div>
+
 {% endblock %}
 
 {% block controls %} 
 	{{ controlBar("parameter-estimation", "uncertainty-quantification") }} 
 {% endblock %}
+
+{% block module_right %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{% with start=block.start, end=block.end, result=block.estimation %}
+			{% include "items/estimation.html" %}
+		{% endwith %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+

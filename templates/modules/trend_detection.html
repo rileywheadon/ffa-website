@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -10,45 +9,25 @@
 
 {% block module_left %}
 
-<div class="flex flex-col w-full h-full gap-y-2">
-	{% for block in results %}
-		{% for key, value in block["items"].items() %}
-			{{ resultItem(key, value, block.period, options) }}
-		{% endfor %}
-	{% endfor %}
-</div>
-
-{% endblock %}
-
-{% block module_right %}
-
-<div class="p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
-	<div class="flex-none w-full text-center underline">Module Summary</div>
-
-	<p>This module uses a collection of statistical tests to identify trends in the mean/variability of the chosen dataset. While these tests can provide useful information, it is ultimately up to the modeller to select an approach using both the results of EDA <i>and</i> their knowledge of the station.</p>
-</div>
-
-<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+<div class="p-4 border-2 border-gray-600 rounded-lg flex flex-col gap-y-2">
 
 	<div class="flex-none w-full text-center underline">Identified Trends</div>
 
 	<div class="grow"> 
 		{% for block in results %}
 
-			{% set start = block.period[0] %}
-			{% set end = block.period[1] %}
-			{% set items = block["items"] %}
+			{% set tests = block.tests %}
 
-			<p class="font-semibold">{{ start }}-{{ end }}: </p>
+			<p class="font-semibold">{{ block.start }}-{{ block.end }}: </p>
 
-			<ul class="list-disc list-inside mt-2">
-			{% if "sens_mean" in items.keys() and "sens_variance" in items.keys() %}
+			<ul class="list-disc list-inside my-2">
+			{% if "sens_mean" in tests.keys() and "sens_variance" in tests.keys() %}
 				<li>There is evidence of a trend in the mean and variability.</li> 
 				<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
-			{% elif "sens_mean" in items.keys() %}
+			{% elif "sens_mean" in tests.keys() %}
 				<li>There is evidence of a trend in the mean.</li> 
 				<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
-			{% elif "sens_variance" in items.keys() %}
+			{% elif "sens_variance" in tests.keys() %}
 				<li>There is evidence of a trend in the variability.</li> 
 				<li>Recommendation: <span class="font-semibold">Use NS-FFA</span>.</li>
 			{% else %}
@@ -59,6 +38,15 @@
 
 		{% endfor %}
 	</div>
+
+</div>
+
+<div class="grow p-4 border border-gray-300 rounded-lg flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+
+	<p>This module uses a collection of statistical tests to identify trends in the mean/variability of the chosen dataset. While these tests can provide useful information, it is ultimately up to the modeller to select an approach using both the results of EDA <i>and</i> their knowledge of the station.</p>
+
 </div>
 
 {% endblock %}
@@ -66,3 +54,30 @@
 {% block controls %} 
 	{{ controlBar("trend-detection", "approach-selection") }}
 {% endblock %}
+
+{% block module_right %}
+
+<div class="flex flex-col w-full h-full gap-y-2">
+	{% for block in results %}
+		{% for key, value in block.tests.items() %} 
+			{% with start=block.start, end=block.end, result=value, options=options %}
+
+				<!-- Improved p-value formatting -->
+				{% if "p_value" not in value %}
+					{% set p_value = "" %}
+				{% elif value.p_value > 0.001 %}
+					{% set p_value = "%.3f" % value.p_value %}
+				{% else %}
+					{% set p_value = "<0.001" %}
+				{% endif %}
+
+				{% include "items/" ~ key ~ ".html" %}		
+
+			{% endwith %}
+		{% endfor %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+

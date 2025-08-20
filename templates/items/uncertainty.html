@@ -1,0 +1,75 @@
+{% extends "items/item_base.html" %}
+
+{% block item_header %}
+	<b>{{ result.method }} Uncertainty Quantification</b> ({{ start }}-{{ end }})
+{% endblock %}
+
+{% block item_content %}
+
+	<img 
+			class="max-w-2xl self-center"
+			src="{{ result.plot }}"
+			alt="Embedded Image"
+	/>
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	{% if "ci_list" in result %}
+
+		{% for key, value in result.ci_list.items() %}
+
+			<table class="text-center table-auto mt-4">
+				<tr>
+					<td class="p-1 border border-gray-300 underline">Return Period ({{ key }})</td>
+					<td class="p-1 border border-gray-300 underline">Estimated Return Level</td>
+					<td class="p-1 border border-gray-300 underline">Confidence Interval</td>
+				</tr>
+				{% for i in range(value | length) %}
+					{% set row = value[i] %}
+					<tr>
+						<td class="p-1 border border-gray-300">
+							{{ row.periods }} Years
+						</td>
+						<td class="p-1 border border-gray-300">
+							{{ row.estimates }}
+						</td>
+						<td class="p-1 border border-gray-300">
+							({{ row.lower }}, {{ row.upper }})
+						</td>
+					</tr>
+				{% endfor %}
+			</table>
+
+		{% endfor %}
+
+	{% else %}
+
+		<table class="text-center table-auto mt-4">
+			<tr>
+				<td class="p-1 border border-gray-300 underline">Return Period</td>
+				<td class="p-1 border border-gray-300 underline">Estimated Return Level</td>
+				<td class="p-1 border border-gray-300 underline">Confidence Interval</td>
+			</tr>
+			{% for i in range(result.ci | length) %}
+				{% set row = result.ci[i] %}
+				<tr>
+					<td class="p-1 border border-gray-300">
+						{{ row.periods }} Years
+					</td>
+					<td class="p-1 border border-gray-300">
+						{{ row.estimates }}
+					</td>
+					<td class="p-1 border border-gray-300">
+						({{ row.lower }}, {{row.upper}})
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+
+	{% endif %}
+
+	<div class="border-b border-gray-300 my-4"></div>
+
+	<div>For more information about uncertainty quantification, see <a href="https://rileywheadon.github.io/ffa-framework/articles/uncertainty-quantification.html" class="underline text-sky-600">here</a>.</div>
+	
+{% endblock %}

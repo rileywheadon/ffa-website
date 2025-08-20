@@ -4,9 +4,76 @@
 {% from "control_bar.html" import controlBar %}
 {% from "macros.html" import spinner %}
 
-{% block status %} {{ statusBar(1) }} {% endblock %}
+{% block status %}
+	{{ statusBar(1) }} 
+{% endblock %}
 
 {% block module_left %}
+
+<div class="border-2 border-gray-600 rounded-lg p-4 flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Dataset Overview</div>
+
+	{% if not results %}
+
+		<div class="grow flex flex-col gap-y-2">
+			<p>No dataset selected.</p>			
+		</div>
+
+	{% else %}
+
+		<div class="grow flex flex-col gap-y-2">
+
+			{% if "file_name" in results %}
+				{% include "modules/dataset_local.html" %}
+			{% else %}
+				{% include "modules/dataset_geomet.html" %}
+			{% endif %}
+
+		</div>
+
+		<div class="flex flex-row gap-x-2">
+			{% if "file_name" not in results %}
+				<a 
+					class="text-sky-600 underline cursor-pointer"
+					href="/download-geomet/{{ results.station_number }}"
+					download
+				>Download Data</a> 
+				&bull;
+			{% endif %}
+			<a 
+				class="text-sky-600 underline cursor-pointer"
+				hx-get="/view-plot"
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>View Plot</a> 
+			&bull;
+			<a 
+				class="text-sky-600 underline cursor-pointer"
+				href="/download-plot"
+				download
+			>Download Plot</a>
+		</div>
+
+	{% endif %}
+
+</div>
+
+<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
+
+	<div class="flex-none w-full text-center underline">Module Summary</div>
+
+		<p>The FFA framework uses annual maximum series data. The data for stations on the map is provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
+
+</div>
+
+{% endblock %}
+
+{% block controls %} 
+	{{ controlBar("dataset-selection", "change-point-detection") }}
+{% endblock %}
+
+{% block module_right %}
 
 	<div 
 		class="w-full h-full flex flex-col items-center gap-y-4 overflow-y-auto" 
@@ -82,67 +149,4 @@
 
 {% endblock %}
 
-{% block module_right %}
 
-	<div class="border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
-
-		<div class="flex-none w-full text-center underline">Module Summary</div>
-
-		<p>The FFA framework uses annual maximum series data. The data for stations on the map is provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
-
-	</div>
-
-	<div class="grow border border-gray-300 rounded-lg p-4 flex flex-col gap-y-2">
-
-		<div class="flex-none w-full text-center underline">Dataset Overview</div>
-
-		{% if not results %}
-
-			<div class="grow flex flex-col gap-y-2">
-				<p>No dataset selected.</p>			
-			</div>
-
-		{% else %}
-
-			<div class="grow flex flex-col gap-y-2">
-
-				{% if "file_name" in results %}
-					{% include "modules/dataset_local.html" %}
-				{% else %}
-					{% include "modules/dataset_geomet.html" %}
-				{% endif %}
-
-			</div>
-
-			<div class="flex flex-row gap-x-2">
-				{% if "file_name" not in results %}
-					<a 
-						class="text-sky-600 underline cursor-pointer"
-						href="/download-geomet/{{ results.station_number }}"
-						download
-					>Download Data</a> 
-					&bull;
-				{% endif %}
-				<a 
-					class="text-sky-600 underline cursor-pointer"
-					hx-get="/view-plot"
-					hx-target="#modal-container"
-					hx-swap="innerHTML"
-				>View Plot</a> 
-				&bull;
-				<a 
-					class="text-sky-600 underline cursor-pointer"
-					href="/download-plot"
-					download
-				>Download Plot</a>
-			</div>
-
-		{% endif %}
-
-	</div>
-
-{% endblock %}
-
-{% block controls %} 
-	{{ controlBar("dataset-selection", "change-point-detection") }}
-{% endblock %}
