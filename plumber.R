@@ -1,11 +1,10 @@
 # plumber.R
 library(plumber)
 library(ffaframework) 
-library(glue)
-library(ggplot2)
 library(base64enc)
 library(rmarkdown)
 library(jsonlite)
+library(glue)
 
 # Helper function for converting images to base64
 serialize_plot <- function(plot) {
@@ -75,16 +74,21 @@ function(data, years, splits, structures, distributions, options) {
 #* @post /uncertainty-quantification
 #* @serializer unboxedJSON 
 function(data, years, splits, structures, distributions, options) {
-	ffaframework:::submodule_05(
-		data,
-		years,
-		distributions,
-		options,
-		splits,
-		apply(structures, 1, as.list),
-		NULL,
-		TRUE
-	) 
+	tryCatch(
+		expr = { ffaframework:::submodule_05(
+			data,
+			years,
+			distributions,
+			options,
+			splits,
+			apply(structures, 1, as.list),
+			NULL,
+			TRUE
+		)},
+		error = function(e) {
+			list(error = e$message)
+		}
+	)
 }
 
 #* @post /model-assessment
@@ -94,7 +98,7 @@ function(data, years, splits, structures, distributions, intervals, options) {
 		data,
 		years,
 		distributions,
-		lapply(intervals, function(x) if (is.na(x)) NULL else x),
+		lapply(intervals, function(x) if (is.data.frame(x)) x else NULL),
 		options,
 		splits,
 		apply(structures, 1, as.list),
@@ -103,14 +107,46 @@ function(data, years, splits, structures, distributions, intervals, options) {
 	) 
 }
 
-# TODO: Fix serialization issue
 #* @post /report-html
-function(report_params) {
+#* @serializer contentType list(type = "text/html; charset=utf-8")
+function(req, res) {
 
-	print(str(report_params))
+	raw <- if (!is.null(req$postBody)) req$postBody else rawToChar(req$body)
 
-	# Get the template
-	template <- system.file("templates", "_master.Rmd", package = "ffaframework")
+	results <- jsonlite::fromJSON(
+		txt               = raw,
+		simplifyVector    = TRUE,
+		simplifyDataFrame = FALSE,
+		simplifyMatrix    = FALSE
+  	)$report_params
+
+	# Now results is purely lists/vectors. Coerce Pettitt, MKS, and uncertainty to dataframe.
+	results$submodule_results[[1]]$tests$pettitt$change_points <- {
+		change_points <- results$submodule_results[[1]]$tests$pettitt$change_points
+		do.call(rbind, lapply(change_points, as.data.frame))
+	}
+
+	results$submodule_results[[1]]$tests$mks$change_points <- {
+		change_points <- results$submodule_results[[1]]$tests$mks$change_points
+		do.call(rbind, lapply(change_points, as.data.frame))
+	}
+
+	for (i in seq_along(results$submodule_results)) {
+	  	block <- results$submodule_results[[i]]
+
+		if (block$name == "Uncertainty Quantification") {
+			if ("ci" %in% names(block$uncertainty)) {
+				results$submodule_results[[i]]$uncertainty$ci <-
+					do.call(rbind, lapply(block$uncertainty$ci, as.data.frame))
+				next
+			}
+
+			for (j in seq_along(block$uncertainty$ci_list)) {
+				results$submodule_results[[i]]$uncertainty$ci_list[[j]] <-
+					do.call(rbind, lapply(block$uncertainty$ci_list[[j]], as.data.frame))
+			}
+		}
+	}
 
 	# Create temporary directory for the report
 	report_dir <- tempdir()
@@ -119,22 +155,22 @@ function(report_params) {
 
 	# Add the title and img_dir to the report parameters
 	report_params <- c(
-		report_params,
+		results,
 		list(title = "Framework Report", img_dir = img_dir)
 	)
 
 	# Render the template
 	rmarkdown::render(
-		input         = template,
+		input         = system.file("templates", "_master.Rmd", package = "ffaframework"),
 		params        = report_params,
 		output_format = "html_document",
 		output_dir    = report_dir,
 		output_file   = "report",
-		quiet         = FALSE
+		quiet         = TRUE
 	)
 
 	# Return the output file
 	output_file <- paste0(report_dir, "/report.html")
-	include_file(output_file)
+	readChar(output_file, file.info(output_file)$size, useBytes = TRUE)
 
 }

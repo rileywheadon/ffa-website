@@ -1,17 +1,17 @@
 services:
   caddy:
-    ports:
-      - "8080:80" 
     volumes:
       - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+    ports:
+      - "8080:80" 
 
+  # live-mount your working tree (optional but convenient)
   flask:
-    # live-mount your working tree (optional but convenient)
     volumes:
       - ..:/app
 
+  # expose Plumber for testing only (not used in production)
   plumber:
-    # expose Plumber for testing only (not used in production)
     ports:
       - "8000:8000"
 

@@ -1,4 +1,12 @@
-{% macro controlBar(current, next, form = False, finish = False) %}
+{% macro controlBar(
+	current,
+	next,
+	current_message = "",
+	next_message = "",
+	form = False,
+	finish = False,
+	error = False
+) %}
 
 <div class="w-full grid grid-cols-3 justify-stretch gap-x-2 text-center">
 	<a 
@@ -13,16 +21,16 @@
 	<a 
 		class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow"
 		href="/{{ current }}?repeat=true"
-		@click="loading = true;"
+		@click="loading = true; loading_message = '{{ current_message }}';"
 	>
 		Repeat Module	
 		<i class="fa fa-repeat ml-1" aria-hidden="true"></i>
 	</a>
 	{% if not form %}
 		<a 
-			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
+			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow {% if error %}pointer-events-none{% endif %}"
 			href="/{{ next }}"
-			@click="loading = true;"
+			@click="loading = true; loading_message = '{{ next_message }}';"
 		>
 			{% if finish %}Finish{% else %}Next Module{% endif %}
 			<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
@@ -32,7 +40,8 @@
 			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
 			type="submit"
 			form="{{ current }}"
-			@click="loading = true;"
+			@click="loading = true; loading_message = '{{ next_message }}';"
+			{% if error %}disabled{% endif %}
 		>
 			{% if finish %}Finish{% else %}Next Module{% endif %}
 			<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>

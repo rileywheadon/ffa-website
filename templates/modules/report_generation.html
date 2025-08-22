@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -10,38 +9,17 @@
 
 {% block module_left %}
 
-<form 
-	action="/download-report"
-	method="POST"
+<div 
 	class="flex flex-col w-full rounded-lg border-gray-600 border-2 p-4 grow"
 >
-	<div class="underline mb-4">Select file formats:</div>
-	<div>
-		<input type="checkbox" name="html">
-		<span>HTML</span>
-	</div>
-	<div>
-		<input type="checkbox" name="pdf">
-		<span>PDF</span>
-	</div>
-	<div>
-		<input type="checkbox" name="md">
-		<span>Markdown</span>
-	</div>
-	<div>
-		<input type="checkbox" name="json">
-		<span>JSON</span>
-	</div>
-	<div class="self-end flex flex-row w-full justify-right mt-auto text-sm">
-		<button 
-			type="submit" 
-			class="bg-sky-600 text-white font-semibold rounded-lg py-2 px-4 ml-auto"
-			disabled
-		>
-			Download Reports (Coming Soon)
-		</button>
-	</div>
-</form>
+	<div class="font-semibold mb-4">Download report as:</div>
+	<ul class="list-disc list-inside ml-2">
+		<li><a href="/report-html" class="text-sky-600 underline">HTML</a></li>
+		<li><a href="" class="text-sky-600 underline">PDF</a> (Coming Soon)</li>
+		<li><a href="" class="text-sky-600 underline">Markdown</a> (Coming Soon)</li>
+		<li><a href="" class="text-sky-600 underline">JSON</a> (Coming Soon)</li>
+	</ul>
+</div>
 
 {% endblock %}
 

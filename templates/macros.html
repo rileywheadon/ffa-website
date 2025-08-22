@@ -1,7 +1,11 @@
 {% macro spinner() %}
 
-<div x-show="loading" class="flex items-center justify-center h-full">
+<!-- NOTE: The spinner appears when LEAVING the current page. -->
+<div x-show="loading" class="flex flex-col items-center justify-center h-full gap-y-4">
 	<div class="w-16 h-16 border-8 border-gray-300 border-t-sky-600 rounded-full animate-spin">
+
+	</div>
+	<div x-text="loading_message">
 
 	</div>
 </div>

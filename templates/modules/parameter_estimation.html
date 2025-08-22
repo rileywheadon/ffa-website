@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -42,7 +41,12 @@
 {% endblock %}
 
 {% block controls %} 
-	{{ controlBar("parameter-estimation", "uncertainty-quantification") }} 
+	{{ controlBar(
+		"parameter-estimation",
+		"uncertainty-quantification",
+		current_message = "Estimating parameters...",
+		next_message = "Quantifying uncertainty (this may take a while)..."
+	) }} 
 {% endblock %}
 
 {% block module_right %}

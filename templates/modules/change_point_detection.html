@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -65,7 +64,13 @@
 {% endblock %}
 
 {% block controls %}
-	{{ controlBar("change-point-detection", "trend-detection", True) }}
+	{{ controlBar(
+		"change-point-detection",
+		"trend-detection",
+		current_message = "Detecting change points...",
+		next_message = "Detecting trends...",
+		form = True
+	) }}
 {% endblock %}
 
 {% block module_right %} 

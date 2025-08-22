@@ -2,7 +2,6 @@ http://localhost {
 	encode zstd gzip
 	log
 
-	# Route everything to Flask (production behavior)
 	handle {
 		reverse_proxy flask:5000
 	}

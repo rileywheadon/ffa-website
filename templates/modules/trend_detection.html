@@ -52,7 +52,11 @@
 {% endblock %}
 
 {% block controls %} 
-	{{ controlBar("trend-detection", "approach-selection") }}
+	{{ controlBar(
+		"trend-detection",
+		"approach-selection",
+		current_message = "Detecting trends..."
+	) }}
 {% endblock %}
 
 {% block module_right %}

@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import spinner %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -21,7 +20,12 @@
 {% endblock %}
 
 {% block controls %}
-	{{ controlBar("approach-selection", "distribution-selection", form = True) }}
+	{{ controlBar(
+		"approach-selection",
+		"distribution-selection",
+		next_message = "Selecting a distribution...",
+		form = True
+	) }}
 {% endblock %}
 
 {% block module_right %}

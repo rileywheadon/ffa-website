@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -20,7 +19,11 @@
 {% endblock %}
 
 {% block controls %}
-	{{ controlBar("model-assessment", "report-generation") }}
+	{{ controlBar(
+		"model-assessment",
+		"report-generation",
+		current_message = "Assessing the model..."
+	) }}
 {% endblock %}
 
 {% block module_right %}

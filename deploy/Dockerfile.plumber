@@ -1,15 +1,19 @@
-FROM rocker/r-ver:4.5.1
+FROM rstudio/plumber
 
+# Install pandoc
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcurl4-openssl-dev libxml2-dev libssl-dev \
+    pandoc \
     && rm -rf /var/lib/apt/lists/*
 
-RUN R -e "install.packages(c('plumber','jsonlite','httr'), repos='https://cloud.r-project.org')"
+# Install additional packages
+RUN R -q -e "install.packages(c('remotes', 'base4enc', 'rmarkdown', 'jsonlite'))"
+RUN R -q -e "remotes::install_github('rileywheadon/ffa-framework')"
 
-WORKDIR /srv
-# Only what Plumber needs; your file is at repo root
-COPY plumber.R /srv/plumber.R
-
+# Put Plumber file in a known location
+WORKDIR /app
+COPY plumber.R /app/plumber.R
 EXPOSE 8000
-CMD ["R", "-e", "pr <- plumber::plumb('plumber.R'); pr$run(host='0.0.0.0', port=8000)"]
+
+# Run R Plumber
+CMD ["/app/plumber.R"]
 

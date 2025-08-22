@@ -34,7 +34,10 @@
 
 </head>
 
-<body x-data="{ loading: false }" class="h-full max-h-screen p-6 text-gray-800 flex flex-col">
+<body 
+	x-data="{ loading: false, loading_message: '' }"
+	class="h-full max-h-screen p-6 text-gray-800 flex flex-col"
+>
 
 {% block content %}
 

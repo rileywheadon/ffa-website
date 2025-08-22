@@ -1,6 +1,5 @@
 {% extends "module.html" %}
 
-{% from "macros.html" import resultItem %}
 {% from "status_bar.html" import statusBar %}
 {% from "control_bar.html" import controlBar %}
 
@@ -62,7 +61,13 @@
 {% endblock %}
 
 {% block controls %}
-	{{ controlBar("distribution-selection", "parameter-estimation", form = True) }}
+	{{ controlBar(
+		"distribution-selection",
+		"parameter-estimation",
+		current_message = "Selecting a distribution...",
+		next_message = "Estimating parameters...",
+		form = True
+	) }}
 {% endblock %}
 
 {% block module_right %}

@@ -1,4 +1,15 @@
-from flask import Flask, request, render_template, redirect, jsonify, make_response, send_from_directory, Response, url_for
+from flask import (
+    Flask,
+    request,
+    render_template,
+    redirect,
+    jsonify,
+    make_response,
+    send_from_directory,
+    Response,
+    url_for
+)
+
 import pandas as pd
 import base64
 import redis
@@ -7,11 +18,18 @@ import uuid
 import os
 import io
 import json
+import dotenv
 
 app = Flask(__name__)
 
-# Connect to Valkey
-valkey = redis.Redis(host='localhost', port=6379)
+# Connect to Valkey/Plumber (Docker)
+dotenv.load_dotenv()
+valkey = redis.Redis.from_url(os.getenv("VALKEY_URL"))
+PLUMBER_URL = "http://plumber:8000"
+
+# Connect to Valkey/Plumber (Local)
+# valkey = redis.Redis("localhost", port = 6379)
+# PLUMBER_URL = "http://localhost:8000"
 
 
 #############
@@ -21,9 +39,6 @@ valkey = redis.Redis(host='localhost', port=6379)
 
 # Cookie age (1 week)
 COOKIE_AGE = 60 * 60 * 24 * 7
-
-# Data sources and constants
-PLUMBER_URL = "http://localhost:8000"
 
 # Load the entire JSON data once at startup
 DATA_PATH = os.path.join(os.path.dirname(__file__), "static", "data", "statistics.json")
@@ -666,6 +681,7 @@ def uncertainty_quantification():
 
     # Write the results to valkey, render the distribution selection template
     write_to_valkey(uid, {"uncertainty_quantification": results})
+    print(results)
     return render_template(template, results = results, options = options)
 
 
@@ -791,17 +807,13 @@ def report_generation():
     return render_template(template, options = options, results = submodule_results)
 
 
-# TODO: Implement report generation for multiple filetypes
-@app.route("/download-report", methods = ["GET", "POST"])
-def download_report():
+@app.route("/report-html", methods = ["GET", "POST"])
+def report_html():
+
     uid = get_or_create_uid()
-    filetypes = request.form.to_dict().keys()
-
-    for ft in filetypes:
-        print(ft)
-
-    report_params = read_from_valkey(uid, "report_params")
-    buffer = access_r_api("report-html", {"report_params": report_params})
+    data = {"report_params": read_from_valkey(uid, "report_params")}
+    response = requests.post(f"{PLUMBER_URL}/report-html", json=data)
+    buffer = getattr(response, "content", None)
 
     return Response(
         buffer,
@@ -809,7 +821,5 @@ def download_report():
         headers={"Content-Disposition": f"attachment; filename=report.html"}
     )
 
-
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
-
