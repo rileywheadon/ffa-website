@@ -2,5 +2,5 @@ venv/**
 static/data/raw/**
 dump.rdb
 .env
-.Rdata
+.RData
 .Rhistory
