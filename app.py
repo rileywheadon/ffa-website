@@ -23,19 +23,27 @@ import dotenv
 app = Flask(__name__)
 
 # Connect to Valkey/Plumber (Docker)
-dotenv.load_dotenv()
-valkey = redis.Redis.from_url(os.getenv("VALKEY_URL"))
-PLUMBER_URL = "http://plumber:8000"
+# dotenv.load_dotenv()
+# valkey = redis.Redis.from_url(os.getenv("VALKEY_URL"))
+# PLUMBER_URL = "http://plumber:8000"
 
 # Connect to Valkey/Plumber (Local)
-# valkey = redis.Redis("localhost", port = 6379)
-# PLUMBER_URL = "http://localhost:8000"
+valkey = redis.Redis("localhost", port = 6379)
+PLUMBER_URL = "http://localhost:8000"
 
 
 #############
 # CONSTANTS #
 #############
 
+
+# CSS build epoch (for fast and up-to-date CSS)
+css_build_epoch = os.environ.get("CSS_BUILD_EPOCH", "")
+
+@app.url_defaults
+def add_cache_buster(endpoint, values):
+    if ("static" in endpoint) and ("filename" in values):
+        values.setdefault("v", css_build_epoch)
 
 # Cookie age (1 week)
 COOKIE_AGE = 60 * 60 * 24 * 7
