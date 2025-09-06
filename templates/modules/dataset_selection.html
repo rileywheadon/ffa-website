@@ -4,7 +4,7 @@
 {% from "control_bar.html" import controlBar %}
 
 {% block status %}
-	{{ statusBar(1) }} 
+	{{ statusBar(0, 0) }} 
 {% endblock %}
 
 {% block module_left %}
@@ -62,7 +62,7 @@
 
 	<div class="flex-none w-full text-center underline">Module Summary</div>
 
-		<p>The FFA framework uses annual maximum series data. The data for stations on the map is provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
+	<p>The FFA framework uses <i>instantaneous</i> annual maximum series data. The data for stations on the map is <b></b> provided by <a href="https://www.canada.ca/en/environment-climate-change/services/water-overview/quantity/monitoring/survey/data-products-services/national-archive-hydat.html" class="underline text-sky-600">HYDAT</a>, which measures streamflow in m<sup>3</sup>/s.</p>
 
 </div>
 

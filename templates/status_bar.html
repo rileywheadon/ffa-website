@@ -1,52 +1,100 @@
-{% macro statusItem(name, stage, position) %}
+{% set navbar = {
+	"Data Preprocessing": [
+		"Dataset Selection",
+		"Data Screening",
+	],
+	"Exploratory Data Analysis": [
+		"Outlier Detection",
+		"Change Point Detection",
+		"Trend Detection",
+	],
+	"FFA Approach Selection": [],
+	"Flood Frequency Analysis": [
+		"Distribution Selection",
+		"Parameter Estimation",
+		"Uncertainty Quantification",
+		"Model Assessment"
+	],
+	"Report Generation": []
+} %}
 
-  <a 
-		class="row-start-2 flex flex-row items-center text-white cursor-pointer transform transition duration-300 ease-out hover:-translate-y-[4px]"
-		{% if position < stage %} href="/{{ name.replace(' ', '-') | lower }}" {% endif %}
-	>
+{% macro statusBar(module, submodule) %}
 
-		{% if position < stage %}
-			{% set color_border = 'border-gray-500' %}
-			{% set color_bg = 'bg-gray-500' %}
-		{% elif position == stage %}
-			{% set color_border = 'border-sky-600' %}
-			{% set color_bg = 'bg-sky-600' %}
-		{% else %}
-			{% set color_border = 'border-gray-700' %}
-			{% set color_bg = 'bg-gray-700' %}
-		{% endif %}
+<div class="hidden lg:grid lg:text-xs xl:text-sm grid-cols-5 items-stretch w-full text-center mb-4 font-semibold">
 
-		<div class="{{ color_bg }} flex-none w-0 h-0 border-white border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
-		<div class="{{ color_bg }} h-[4em] grow flex flex-row items-center justify-center text-center px-1  shadow-lg">{{ name }}</div>
-		<div class="{{ color_border }} flex-none w-0 h-0 border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
+	{% for name, submodules in navbar.items() %}
 
-  </a>
+		{% set keys = navbar.keys() | list %}
+		{% set position = keys.index(name) %}
 
-{% endmacro %}
+		<div
+			class="relative"
+			x-data="{ open: false }"
+			@keydown.escape="open = false"
+			@click.outside="open = false"
+			@click="open = !open"
+		>
 
-{% macro statusBar(stage) %}
+			<div class="col-span-1 flex flex-row items-center text-white cursor-pointer">
 
-<div class="hidden xl:grid grid-rows-[3em_4em] grid-cols-9 items-stretch w-full text-center mb-6 text-sm font-semibold">
+				{% if position < module %}
+					{% set color_border = 'border-gray-500' %}
+					{% set color_bg = 'bg-gray-500' %}
+				{% elif position == module %}
+					{% set color_border = 'border-sky-600' %}
+					{% set color_bg = 'bg-sky-600' %}
+				{% else %}
+					{% set color_border = 'border-gray-700' %}
+					{% set color_bg = 'bg-gray-700' %}
+				{% endif %}
 
-  <div class="col-span-3 col-start-2">
-		<div class="mb-1">Exploratory Data Analysis</div>
-		<div class="border-x-2 border-t-2 rounded-t-sm border-gray-600 p-1"></div>
-  </div>
+				<div class="{{ color_bg }} flex-none w-0 h-0 border-white border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
 
-  <div class="col-span-4 col-start-5">
-		<div class="mb-1">Frequency Analysis</div>
-		<div class="border-x-2 border-t-2 rounded-t-sm border-gray-600 p-1"></div>
-  </div>
+				<div class="{{ color_bg }} h-[4em] grow flex flex-row items-center justify-center text-center px-1 shadow-lg">
 
-	{{ statusItem('Dataset Selection', stage, 1) }}
-	{{ statusItem('Change Point Detection', stage, 2) }}
-	{{ statusItem('Trend Detection', stage, 3) }}
-	{{ statusItem('Approach Selection', stage, 4) }}
-	{{ statusItem('Distribution Selection', stage, 5) }}
-	{{ statusItem('Parameter Estimation', stage, 6) }}
-	{{ statusItem('Uncertainty Quantification', stage, 7) }}
-	{{ statusItem('Model Assessment', stage, 8) }}
-	{{ statusItem('Report Generation', stage, 9) }}
+					<span>{{ name }}</span>
+
+					{% if (submodules | length) > 0 %}
+						<i 
+						 class="fa ml-2" 
+						 x-bind:class="open ? 'fa-minus-circle' : 'fa-plus-circle'"
+						 aria-hidden="true"
+						></i>
+					{% endif %}
+
+				</div>
+
+				<div class="{{ color_border }} flex-none w-0 h-0 border-t-[2em] border-t-transparent border-l-[1em] border-b-[2em] border-b-transparent"></div>
+
+			</div>
+
+			{% if (submodules | length) > 0 %}
+
+			<div
+				x-cloak
+				x-show="open"
+				x-transition.opacity.scale.origin.top.right
+				class="absolute top-[4em] w-full z-20 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-black/5 font-normal"
+				role="menu" aria-orientation="vertical"
+			>
+				<div class="py-1">
+
+					{% for _ in submodules %}
+						<a 
+							href="#profile" 
+							class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if loop.index0 == submodule and position == module %}underline{% endif %}" 
+							role="menuitem"
+						>{{ submodules[loop.index0] }}</a>
+					{% endfor %}
+
+				</div>
+			</div>
+
+			{% endif %}
+
+		</div>
+
+	{% endfor %}
 
 </div>
 

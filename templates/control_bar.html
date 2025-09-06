@@ -8,9 +8,9 @@
 	error = False
 ) %}
 
-<div class="w-full grid grid-cols-3 justify-stretch gap-x-2 text-center">
+<div class="w-full grid grid-cols-6 justify-stretch gap-x-2 text-center text-sm gap-y-2">
 	<a 
-		class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow cursor-pointer"
+		class="col-span-3 xl:col-span-2 py-2 bg-gray-500 font-medium text-white rounded-lg shadow cursor-pointer"
 		hx-get="/edit-options"
 		hx-target="#modal-container"
 		hx-swap="innerHTML"
@@ -19,31 +19,31 @@
 		<i class="fa fa-cog ml-1" aria-hidden="true"></i>
 	</a>
 	<a 
-		class="col-span-1 py-2 bg-gray-500 text-sm font-medium text-white rounded-lg shadow"
+		class="col-span-3 xl:col-span-2 py-2 bg-gray-500 font-medium text-white rounded-lg shadow"
 		href="/{{ current }}?repeat=true"
 		@click="loading = true; loading_message = '{{ current_message }}';"
 	>
-		Repeat Module	
+		Repeat	
 		<i class="fa fa-repeat ml-1" aria-hidden="true"></i>
 	</a>
 	{% if not form %}
 		<a 
-			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow {% if error %}pointer-events-none{% endif %}"
+			class="col-span-6 xl:col-span-2 py-2 bg-sky-600 font-medium text-white rounded-lg shadow {% if error %}pointer-events-none{% endif %}"
 			href="/{{ next }}"
 			@click="loading = true; loading_message = '{{ next_message }}';"
 		>
-			{% if finish %}Finish{% else %}Next Module{% endif %}
+			{% if finish %}Finish{% else %}Next{% endif %}
 			<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
 		</a>
 	{% else %}
 		<button 
-			class="col-span-1 py-2 bg-sky-600 text-sm font-medium text-white rounded-lg shadow"
+			class="col-span-6 xl:col-span-2 py-2 bg-sky-600 font-medium text-white rounded-lg shadow"
 			type="submit"
 			form="{{ current }}"
 			@click="loading = true; loading_message = '{{ next_message }}';"
 			{% if error %}disabled{% endif %}
 		>
-			{% if finish %}Finish{% else %}Next Module{% endif %}
+			{% if finish %}Finish{% else %}Next{% endif %}
 			<i class="fa fa-arrow-right ml-1" aria-hidden="true"></i>
 		</a>
 
