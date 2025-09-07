@@ -9,6 +9,8 @@ services:
   flask:
     volumes:
       - ..:/app
+    ports:
+      - "5000:5000"
 
   # expose Plumber for testing only (not used in production)
   plumber:

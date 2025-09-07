@@ -1,4 +1,4 @@
-ffaframework.ca {
+ffaframework.ca, www.ffaframework.ca {
 	encode zstd gzip
 	log
 
