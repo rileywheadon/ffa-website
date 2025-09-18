@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional packages
-RUN R -q -e "install.packages(c('remotes', 'base4enc', 'rmarkdown', 'jsonlite'))"
+RUN R -q -e "install.packages(c('remotes', 'base4enc', 'rmarkdown', 'jsonlite', 'ggplot2'))"
 RUN R -q -e "remotes::install_github('rileywheadon/ffa-framework')"
 
 # Put Plumber file in a known location

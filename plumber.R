@@ -5,6 +5,8 @@ library(base64enc)
 library(rmarkdown)
 library(jsonlite)
 library(glue)
+library(ggplot2)
+
 
 # Helper function for converting images to base64
 serialize_plot <- function(plot) {
