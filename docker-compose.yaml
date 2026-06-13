@@ -1,0 +1,59 @@
+services:
+  caddy:
+    image: caddy:2
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "8080:80" 
+    depends_on:
+      - ffa-website-flask
+      - ffa-website-plumber
+    networks:
+      - caddy
+
+  ffa-website-flask:
+    build:
+      dockerfile: Dockerfile.flask
+    expose:
+      - "5000"
+    env_file:
+      - ".env"
+    # live-mount working tree to enable hot-reloading
+    volumes:
+      - .:/app
+    depends_on:
+      - ffa-website-plumber
+      - ffa-website-valkey
+    ports:
+      - "5000:5000"
+    networks:
+      - caddy
+    # use the Flask CLI to run the app in debug mode
+    command: flask run --host=0.0.0.0 --port=5000 --debug
+
+  ffa-website-plumber:
+    build:
+      dockerfile: Dockerfile.plumber
+    expose:
+      - "8000"
+    # expose Plumber on port 8000 for development only
+    ports:
+      - "8000:8000"
+    env_file:
+      - ".env"
+    networks:
+      - caddy
+
+  ffa-website-valkey:
+    image: valkey/valkey:7
+    expose:
+      - "6379"
+    networks: 
+      - caddy
+
+networks:
+  caddy:
+
+volumes:
+  caddy_data:
+  caddy_config:

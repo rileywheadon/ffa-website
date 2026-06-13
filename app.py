@@ -22,14 +22,11 @@ import dotenv
 
 app = Flask(__name__)
 
-# Connect to Valkey/Plumber (Docker)
+# Connect to Valkey/Plumber
 dotenv.load_dotenv()
-valkey = redis.Redis.from_url(os.getenv("VALKEY_URL"))
-PLUMBER_URL = "http://plumber:8000"
-
-# Connect to Valkey/Plumber (Local)
-# valkey = redis.Redis("localhost", port = 6379)
-# PLUMBER_URL = "http://localhost:8000"
+PLUMBER_URL = "http://ffa-website-plumber:8000"
+VALKEY_URL = "redis://ffa-website-valkey:6379"
+valkey = redis.Redis.from_url(VALKEY_URL)
 
 
 #############
