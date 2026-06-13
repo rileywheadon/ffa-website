@@ -16,9 +16,9 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY . /app
 
 # Build CSS file in container
-RUN chmod +x /app/buildcss.sh
+RUN chmod +x /app/scripts/buildcss.sh
 RUN chmod +x /app/static/styles/tailwindcss-linux-x64
-ENTRYPOINT ["/app/buildcss.sh"]
+ENTRYPOINT ["/app/scripts/buildcss.sh"]
 
 # Start gunicorn with a single worker
 ENV GUNICORN_CMD_ARGS="--bind 0.0.0.0:5000 --workers 1 --threads 2 --timeout 60"

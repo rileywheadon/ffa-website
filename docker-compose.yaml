@@ -16,8 +16,6 @@ services:
       dockerfile: Dockerfile.flask
     expose:
       - "5000"
-    env_file:
-      - ".env"
     # live-mount working tree to enable hot-reloading
     volumes:
       - .:/app
@@ -39,8 +37,6 @@ services:
     # expose Plumber on port 8000 for development only
     ports:
       - "8000:8000"
-    env_file:
-      - ".env"
     networks:
       - caddy
 

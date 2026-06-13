@@ -18,12 +18,10 @@ import uuid
 import os
 import io
 import json
-import dotenv
 
 app = Flask(__name__)
 
 # Connect to Valkey/Plumber
-dotenv.load_dotenv()
 PLUMBER_URL = "http://ffa-website-plumber:8000"
 VALKEY_URL = "redis://ffa-website-valkey:6379"
 valkey = redis.Redis.from_url(VALKEY_URL)
@@ -33,14 +31,6 @@ valkey = redis.Redis.from_url(VALKEY_URL)
 # CONSTANTS #
 #############
 
-
-# CSS build epoch (for fast and up-to-date CSS)
-css_build_epoch = os.environ.get("CSS_BUILD_EPOCH", "")
-
-@app.url_defaults
-def add_cache_buster(endpoint, values):
-    if ("static" in endpoint) and ("filename" in values):
-        values.setdefault("v", css_build_epoch)
 
 # Cookie age (1 week)
 COOKIE_AGE = 60 * 60 * 24 * 7
