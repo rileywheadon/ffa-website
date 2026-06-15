@@ -32,9 +32,6 @@ valkey = redis.Redis.from_url(VALKEY_URL)
 #############
 
 
-# Cookie age (1 week)
-COOKIE_AGE = 60 * 60 * 24 * 7
-
 # Load the entire JSON data once at startup
 DATA_PATH = os.path.join(os.path.dirname(__file__), "static", "data", "statistics.json")
 with open(DATA_PATH, "r", encoding="utf-8") as f:
@@ -193,8 +190,41 @@ def module_handler(endpoint, repeat):
 def index():
     uid = get_or_create_uid()
     response = make_response(render_template("index.html"))
-    response.set_cookie("uid", uid, max_age = COOKIE_AGE, httponly = True)
+    response.set_cookie("uid", uid, httponly = True)
     return response
+
+
+@app.route("/health")
+def health():
+
+    # Check Plumber
+    plumber_available = False
+    try:
+        response = requests.get(
+            f"{PLUMBER_URL}/health",
+            timeout=2,
+        )
+        plumber_available = response.ok
+    except Exception:
+        pass
+
+    # Check Valkey
+    valkey_available = False
+    try:
+        valkey_available = valkey.ping()
+    except Exception:
+        pass
+
+    # Aggregate statuses
+    all_available = plumber_available and valkey_available
+
+    containers = [
+        {"name": "ffa-website-flask", "available": True},
+        {"name": "ffa-website-plumber", "available": plumber_available},
+        {"name": "ffa-website-valkey", "available": valkey_available},
+    ]
+
+    return jsonify({"available": all_available, "containers": containers})
 
 
 @app.route("/edit-options", methods = ["GET"])

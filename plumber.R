@@ -15,6 +15,11 @@ serialize_plot <- function(plot) {
 	base64enc::dataURI(file = buffer, mime = "image/png")
 }
 
+#* @get /health
+function() {
+  list(available = TRUE)
+}
+
 #* @post /dataset-selection
 #* @serializer unboxedJSON
 function(data, years) {
